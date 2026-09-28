@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Iceberg Clicker</title>
+    <title>Ice Crystal Clicker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-deep: #050a1a;
-            --bg-mid: #0f1a3a;
-            --ice-light: #ffffff;
-            --ice-mid: #a0e9ff;
-            --ice-dark: #4dd0e1;
-            --ice-glow: rgba(128, 222, 234, 0.8);
+            --bg-deep: #03060f;
+            --bg-mid: #0a1530;
+            --bg-glow: #1a3a5c;
+            --crystal-1: #ffffff;
+            --crystal-2: #b3e5fc;
+            --crystal-3: #4fc3f7;
+            --crystal-4: #0288d1;
+            --crystal-5: #01579b;
+            --crystal-glow: rgba(79, 195, 247, 0.9);
             --accent-green: #00e676;
             --accent-blue: #40c4ff;
             --text-main: #ffffff;
-            --text-secondary: #90a4ae;
-            --panel-bg: rgba(15, 26, 58, 0.92);
+            --text-secondary: #78909c;
+            --panel-bg: rgba(10, 21, 48, 0.92);
             
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -33,9 +36,9 @@
         body {
             margin: 0;
             padding: 0;
-            background: radial-gradient(ellipse at 50% 20%, #1a3a5c 0%, var(--bg-mid) 40%, var(--bg-deep) 100%);
+            background: radial-gradient(ellipse at 50% 35%, #0f2447 0%, var(--bg-mid) 40%, var(--bg-deep) 100%);
             color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
             height: 100vh;
             height: 100dvh;
@@ -46,20 +49,44 @@
             padding-bottom: var(--safe-bottom);
         }
 
+        /* --- Background stars --- */
+        .stars-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+                radial-gradient(1px 1px at 60% 70%, #fff, transparent),
+                radial-gradient(1px 1px at 80% 20%, #b3e5fc, transparent),
+                radial-gradient(1px 1px at 30% 80%, #fff, transparent),
+                radial-gradient(1px 1px at 90% 50%, #b3e5fc, transparent),
+                radial-gradient(1px 1px at 10% 60%, #fff, transparent),
+                radial-gradient(1px 1px at 50% 10%, #fff, transparent),
+                radial-gradient(1px 1px at 70% 90%, #b3e5fc, transparent);
+            opacity: 0.5;
+            z-index: 0;
+            animation: twinkle 4s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+
         /* --- Score Section --- */
         .score-section {
             text-align: center;
             padding: 15px 0 0 0;
             z-index: 10;
             flex-shrink: 0;
+            position: relative;
         }
 
         .subtitle {
             color: var(--text-secondary);
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 600;
+            letter-spacing: 3px;
+            font-weight: 700;
         }
 
         .balance {
@@ -70,25 +97,20 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            color: var(--ice-light);
-            text-shadow: 0 0 20px var(--ice-glow), 0 0 40px rgba(64, 196, 255, 0.6);
+            color: var(--crystal-1);
+            text-shadow: 0 0 20px var(--crystal-glow), 0 0 40px rgba(64, 196, 255, 0.6);
             font-variant-numeric: tabular-nums;
             position: relative;
+            transition: transform 0.15s;
+        }
+
+        .balance.pulse {
+            transform: scale(1.1);
         }
 
         .ice-icon {
             font-size: 32px;
-            filter: drop-shadow(0 0 15px var(--ice-glow));
-        }
-
-        .balance.pulse {
-            animation: balancePulse 0.3s ease-out;
-        }
-
-        @keyframes balancePulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
+            filter: drop-shadow(0 0 15px var(--crystal-glow));
         }
 
         .income-info {
@@ -102,7 +124,7 @@
         .income-per-sec { color: var(--accent-green); text-shadow: 0 0 10px rgba(0, 230, 118, 0.6); }
         .income-per-click { color: var(--accent-blue); text-shadow: 0 0 10px rgba(64, 196, 255, 0.6); }
 
-        /* --- Main Game Area --- */
+        /* --- Game Area --- */
         .game-area {
             flex: 1;
             position: relative;
@@ -111,65 +133,155 @@
             align-items: center;
             overflow: hidden;
             cursor: pointer;
-            min-height: 0; /* Важно для flex-контейнера! */
+            min-height: 0;
         }
 
         #particles-canvas {
             position: absolute;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
             z-index: 5;
         }
 
-        /* Контейнер айсберга — компактнее и с отступами */
-        .iceberg-container {
+        /* --- Crystal Container --- */
+        .crystal-stage {
             position: relative;
             width: 100%;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px 20px 40px 20px; /* Отступ снизу, чтобы не было обрезки */
             z-index: 2;
         }
 
-        /* SVG Айсберг — теперь с сохранением пропорций */
-        .iceberg-svg {
+        /* Парящий кристалл */
+        .crystal {
+            position: relative;
+            width: 220px;
+            height: 280px;
+            animation: crystalFloat 4s ease-in-out infinite;
+            will-change: transform;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes crystalFloat {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg) scale(1); 
+            }
+            25% { 
+                transform: translateY(-15px) rotate(2deg) scale(1.02); 
+            }
+            50% { 
+                transform: translateY(-5px) rotate(-2deg) scale(1); 
+            }
+            75% { 
+                transform: translateY(-18px) rotate(1deg) scale(1.03); 
+            }
+        }
+
+        /* Внутреннее свечение кристалла */
+        .crystal::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 260px;
+            height: 320px;
+            background: radial-gradient(ellipse, rgba(79, 195, 247, 0.5) 0%, rgba(79, 195, 247, 0.15) 40%, transparent 70%);
+            z-index: -1;
+            animation: innerGlow 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes innerGlow {
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        /* Пульс при клике */
+        .crystal.clicked {
+            animation: crystalClick 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes crystalClick {
+            0% { transform: scale(1); }
+            40% { transform: scale(0.88); }
+            100% { transform: scale(1); }
+        }
+
+        /* SVG Кристалл */
+        .crystal-svg {
             width: 100%;
             height: 100%;
-            max-width: 340px;
-            max-height: 100%;
             overflow: visible;
-            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
-            animation: float 5s ease-in-out infinite;
-            will-change: transform;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 30px rgba(79, 195, 247, 0.4));
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(-0.5deg); }
-            50% { transform: translateY(-8px) rotate(0.5deg); }
+        /* Вращающиеся осколки вокруг */
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 320px;
+            height: 320px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: orbitRotate 12s linear infinite;
+            z-index: 1;
         }
 
-        .shake {
-            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        .orbit.reverse {
+            width: 380px;
+            height: 380px;
+            animation: orbitRotate 18s linear infinite reverse;
         }
 
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-3px, 0, 0) rotate(-1deg); }
-            20%, 80% { transform: translate3d(5px, 0, 0) rotate(1deg); }
-            30%, 50%, 70% { transform: translate3d(-8px, 0, 0) rotate(-2deg); }
-            40%, 60% { transform: translate3d(8px, 0, 0) rotate(2deg); }
+        @keyframes orbitRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        /* Свечение убрано или сильно уменьшено, чтобы не съедало края */
-        .iceberg-glow {
-            display: none;
+        .shard {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #ffffff, #4fc3f7);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            filter: drop-shadow(0 0 6px var(--crystal-glow));
+            opacity: 0.8;
         }
 
-        /* --- Всплывающий текст --- */
+        .shard:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
+        .shard:nth-child(2) { bottom: 0; left: 50%; transform: translateX(-50%); }
+        .shard:nth-child(3) { left: 0; top: 50%; transform: translateY(-50%); }
+        .shard:nth-child(4) { right: 0; top: 50%; transform: translateY(-50%); }
+        .shard:nth-child(5) { top: 15%; left: 15%; }
+        .shard:nth-child(6) { bottom: 15%; right: 15%; }
+
+        /* --- Вспышка при клике --- */
+        .flash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(79,195,247,0.5) 30%, transparent 70%);
+            pointer-events: none;
+            z-index: 10;
+            animation: flashOut 0.5s ease-out forwards;
+        }
+
+        @keyframes flashOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(3); }
+        }
+
+        /* --- Floating text --- */
         .float-text {
             position: absolute;
             color: #ffffff;
@@ -177,24 +289,25 @@
             pointer-events: none;
             animation: floatUp 0.9s ease-out forwards;
             z-index: 100;
-            text-shadow: 0 0 15px var(--ice-glow), 0 0 30px var(--accent-blue);
+            text-shadow: 0 0 15px var(--crystal-glow), 0 0 30px var(--accent-blue);
             font-size: 22px;
             font-variant-numeric: tabular-nums;
             will-change: transform, opacity;
         }
 
         @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-80px) scale(1.4); }
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            30% { opacity: 1; transform: translateY(-25px) scale(1.3); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1); }
         }
 
-        /* --- Летящий кусок льда --- */
+        /* --- Flying shard --- */
         .flying-ice {
             position: fixed;
-            font-size: 22px;
+            font-size: 20px;
             pointer-events: none;
             z-index: 200;
-            filter: drop-shadow(0 0 10px var(--ice-glow));
+            filter: drop-shadow(0 0 12px var(--crystal-glow));
             will-change: transform, opacity;
         }
 
@@ -209,7 +322,7 @@
             padding-bottom: 10px;
             z-index: 20;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
-            border-top: 1px solid rgba(128, 222, 234, 0.2);
+            border-top: 1px solid rgba(79, 195, 247, 0.2);
             flex-shrink: 0;
         }
 
@@ -249,7 +362,7 @@
 
         .card {
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(128, 222, 234, 0.2);
+            border: 1px solid rgba(79, 195, 247, 0.2);
             border-radius: 14px;
             padding: 8px 4px;
             display: flex;
@@ -265,13 +378,13 @@
 
         .card:active {
             transform: scale(0.92);
-            background: rgba(128, 222, 234, 0.25);
+            background: rgba(79, 195, 247, 0.25);
         }
 
         .card-icon {
             font-size: 22px;
             margin-bottom: 4px;
-            filter: drop-shadow(0 0 5px var(--ice-glow));
+            filter: drop-shadow(0 0 5px var(--crystal-glow));
         }
 
         .card-label {
@@ -312,7 +425,7 @@
             justify-content: space-between;
             padding: 0 5px;
             margin-top: 5px;
-            border-top: 1px solid rgba(128, 222, 234, 0.1);
+            border-top: 1px solid rgba(79, 195, 247, 0.1);
             padding-top: 8px;
         }
 
@@ -339,11 +452,13 @@
 </head>
 <body>
 
+    <div class="stars-bg"></div>
+
     <div class="score-section">
         <div class="subtitle">ВАШ ЛЁД</div>
         <div class="balance" id="balance-wrapper">
             <span id="balance">0</span>
-            <span class="ice-icon">🧊</span>
+            <span class="ice-icon">💎</span>
         </div>
         <div class="income-info">
             <span id="income-per-sec">+ 0/сек</span>
@@ -354,117 +469,100 @@
     <div class="game-area" id="game-area">
         <canvas id="particles-canvas"></canvas>
         
-        <div class="iceberg-container" id="iceberg-container">
-            <!-- Айсберг перерисован: компактнее, с видимыми гранями и бликами -->
-            <svg class="iceberg-svg" id="iceberg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <!-- Основной градиент льда -->
-                    <linearGradient id="iceMain" x1="20%" y1="0%" x2="80%" y2="100%">
-                        <stop offset="0%" stop-color="#ffffff"/>
-                        <stop offset="30%" stop-color="#e0f7fa"/>
-                        <stop offset="65%" stop-color="#80deea"/>
-                        <stop offset="100%" stop-color="#4dd0e1"/>
-                    </linearGradient>
+        <div class="crystal-stage">
+            <!-- Орбиты с осколками -->
+            <div class="orbit">
+                <div class="shard"></div>
+                <div class="shard"></div>
+                <div class="shard"></div>
+                <div class="shard"></div>
+            </div>
+            <div class="orbit reverse">
+                <div class="shard"></div>
+                <div class="shard"></div>
+            </div>
+            
+            <!-- Кристалл -->
+            <div class="crystal" id="crystal">
+                <svg class="crystal-svg" viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Главный градиент кристалла -->
+                        <linearGradient id="crystalFace1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="30%" stop-color="#e1f5fe"/>
+                            <stop offset="70%" stop-color="#81d4fa"/>
+                            <stop offset="100%" stop-color="#29b6f6"/>
+                        </linearGradient>
+                        
+                        <!-- Темная грань (правая) -->
+                        <linearGradient id="crystalFace2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#4fc3f7"/>
+                            <stop offset="100%" stop-color="#0288d1"/>
+                        </linearGradient>
+                        
+                        <!-- Еще темнее (правая нижняя) -->
+                        <linearGradient id="crystalFace3" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#0288d1"/>
+                            <stop offset="100%" stop-color="#01579b"/>
+                        </linearGradient>
+                        
+                        <!-- Левая грань -->
+                        <linearGradient id="crystalFace4" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#b3e5fc"/>
+                            <stop offset="100%" stop-color="#4fc3f7"/>
+                        </linearGradient>
+                        
+                        <!-- Блик -->
+                        <radialGradient id="crystalShine" cx="30%" cy="20%" r="50%">
+                            <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+                            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
                     
-                    <!-- Боковая грань (тень) -->
-                    <linearGradient id="iceSide" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#26c6da"/>
-                        <stop offset="100%" stop-color="#4dd0e1"/>
-                    </linearGradient>
+                    <!-- ОСНОВАНИЕ (нижний пирамидальный наконечник) -->
+                    <polygon points="110,270 50,200 110,170 170,200" fill="url(#crystalFace3)"/>
+                    <polygon points="110,270 50,200 80,195 110,220" fill="url(#crystalFace2)" opacity="0.8"/>
+                    <polygon points="110,270 170,200 140,195 110,220" fill="url(#crystalFace3)" opacity="0.9"/>
                     
-                    <!-- Подводная часть -->
-                    <linearGradient id="iceBottom" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#4dd0e1" stop-opacity="0.85"/>
-                        <stop offset="60%" stop-color="#00838f" stop-opacity="0.6"/>
-                        <stop offset="100%" stop-color="#004d40" stop-opacity="0.2"/>
-                    </linearGradient>
+                    <!-- ЛЕВАЯ ГРАНЬ (светлая) -->
+                    <polygon points="50,200 30,100 110,40 110,170" fill="url(#crystalFace4)"/>
                     
-                    <!-- Блик сверху -->
-                    <radialGradient id="iceShine" cx="35%" cy="20%" r="45%">
-                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-                        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-                    </radialGradient>
-                </defs>
-                
-                <!-- ПОДВОДНАЯ ЧАСТЬ (видна, но полупрозрачна) -->
-                <path d="M 85 250 
-                         C 65 290, 60 340, 90 370 
-                         C 120 390, 180 390, 210 370 
-                         C 240 340, 235 290, 215 250 
-                         Z" 
-                      fill="url(#iceBottom)"/>
-                
-                <!-- ОСНОВНАЯ НАДВОДНАЯ ЧАСТЬ -->
-                <path d="M 90 250 
-                         L 85 210 
-                         C 80 175, 95 125, 115 95 
-                         C 130 72, 150 55, 165 52 
-                         C 180 50, 195 60, 210 82 
-                         C 225 105, 230 145, 225 185 
-                         L 218 250 
-                         Z" 
-                      fill="url(#iceMain)"/>
-                
-                <!-- ЛЕВАЯ ГРАНЬ (тень для объема) -->
-                <path d="M 90 250 
-                         L 85 210 
-                         C 80 175, 95 125, 115 95 
-                         C 122 85, 130 78, 138 74
-                         L 145 105
-                         C 130 140, 125 190, 128 250
-                         Z" 
-                      fill="#80deea" 
-                      opacity="0.7"/>
-                
-                <!-- ПРАВАЯ ГРАНЬ -->
-                <path d="M 218 250 
-                         L 225 185 
-                         C 230 145, 225 105, 210 82 
-                         C 205 73, 198 66, 190 62
-                         L 185 95
-                         C 195 125, 200 185, 195 250
-                         Z" 
-                      fill="#26c6da" 
-                      opacity="0.6"/>
-                
-                <!-- БЛИК (свет сверху-слева) -->
-                <path d="M 115 95 
-                         C 130 72, 150 55, 165 52 
-                         C 168 62, 165 90, 155 115
-                         C 140 110, 125 105, 115 95
-                         Z" 
-                      fill="url(#iceShine)"/>
-                
-                <!-- ТРЕЩИНЫ / грани -->
-                <path d="M 145 90 L 142 150 L 152 170 L 145 230" 
-                      stroke="#4dd0e1" 
-                      stroke-width="1.5" 
-                      fill="none" 
-                      opacity="0.5"/>
-                
-                <path d="M 180 85 L 185 130 L 175 160" 
-                      stroke="#26c6da" 
-                      stroke-width="1" 
-                      fill="none" 
-                      opacity="0.4"/>
-                
-                <path d="M 120 175 L 132 195 L 122 225" 
-                      stroke="#80deea" 
-                      stroke-width="1" 
-                      fill="none" 
-                      opacity="0.4"/>
-                
-                <!-- ЛИНИЯ ВОДЫ (видна чётко) -->
-                <line x1="0" y1="250" x2="300" y2="250" 
-                      stroke="#40c4ff" 
-                      stroke-width="2" 
-                      opacity="0.7"/>
-                
-                <!-- ОТРАЖЕНИЕ (маленькое, компактное) -->
-                <ellipse cx="150" cy="258" rx="45" ry="4" 
-                         fill="#40c4ff" 
-                         opacity="0.25"/>
-            </svg>
+                    <!-- ЦЕНТРАЛЬНАЯ ГРАНЬ (основная, светлая) -->
+                    <polygon points="110,40 110,170 50,200 30,100" fill="url(#crystalFace1)" opacity="0.5"/>
+                    
+                    <!-- ПРАВАЯ ГРАНЬ -->
+                    <polygon points="110,40 190,100 170,200 110,170" fill="url(#crystalFace2)"/>
+                    
+                    <!-- ВЕРХНЯЯ ГРАНЬ (верхушка) -->
+                    <polygon points="110,40 190,100 110,120 30,100" fill="url(#crystalFace1)"/>
+                    
+                    <!-- ВЕРХНЯЯ ГРАНЬ - темная часть -->
+                    <polygon points="110,40 190,100 110,120" fill="url(#crystalFace2)" opacity="0.6"/>
+                    
+                    <!-- БОКОВЫЕ РЕБРА (блики по краям) -->
+                    <line x1="110" y1="40" x2="110" y2="170" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+                    <line x1="110" y1="170" x2="110" y2="270" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+                    
+                    <!-- БОЛЬШОЙ БЛИК -->
+                    <polygon points="60,120 100,70 130,90 80,150" fill="url(#crystalShine)" opacity="0.7"/>
+                    
+                    <!-- МАЛЕНЬКИЙ БЛИК -->
+                    <polygon points="130,110 155,90 165,105 140,125" fill="#ffffff" opacity="0.4"/>
+                    
+                    <!-- ВНУТРЕННИЕ ГРАНИ (создают глубину) -->
+                    <polygon points="80,100 110,80 130,140 90,170" fill="#ffffff" opacity="0.15"/>
+                    <polygon points="130,140 160,120 170,180 140,200" fill="#01579b" opacity="0.2"/>
+                    
+                    <!-- ТОНКИЕ ЛИНИИ РЕБЕР -->
+                    <line x1="110" y1="40" x2="30" y2="100" stroke="#b3e5fc" stroke-width="1" opacity="0.7"/>
+                    <line x1="110" y1="40" x2="190" y2="100" stroke="#0288d1" stroke-width="1" opacity="0.7"/>
+                    <line x1="30" y1="100" x2="50" y2="200" stroke="#81d4fa" stroke-width="1" opacity="0.6"/>
+                    <line x1="190" y1="100" x2="170" y2="200" stroke="#01579b" stroke-width="1" opacity="0.6"/>
+                    
+                    <!-- ВНУТРЕННЕЕ ЯДРО (свет изнутри) -->
+                    <ellipse cx="110" cy="120" rx="30" ry="50" fill="#ffffff" opacity="0.15"/>
+                </svg>
+            </div>
         </div>
     </div>
 
@@ -500,7 +598,7 @@
 
         <div class="nav-bar">
             <div class="nav-item active">
-                <span class="nav-icon">🧊</span>
+                <span class="nav-icon">💎</span>
                 <span>Лёд</span>
             </div>
             <div class="nav-item">
@@ -524,12 +622,11 @@
 
     <script>
         let tg = window.Telegram?.WebApp;
-        
         if (tg) {
             tg.ready();
             tg.expand();
-            tg.setHeaderColor('#050a1a');
-            tg.setBackgroundColor('#050a1a');
+            tg.setHeaderColor('#03060f');
+            tg.setBackgroundColor('#03060f');
         } else {
             tg = {
                 close: () => {},
@@ -541,7 +638,6 @@
         let balance = 0;
         let incomePerSecond = 0;
         let incomePerClick = 1;
-        let upgradeLevel = 1;
         let upgradeCost = 50;
 
         const balanceEl = document.getElementById('balance');
@@ -549,11 +645,11 @@
         const incomeSecEl = document.getElementById('income-per-sec');
         const incomeClickEl = document.getElementById('income-per-click');
         const gameArea = document.getElementById('game-area');
-        const iceberg = document.getElementById('iceberg');
+        const crystal = document.getElementById('crystal');
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
 
-        // --- Canvas размер с DPR ---
+        // Canvas resize
         let canvasW = 0, canvasH = 0;
         function resizeCanvas() {
             const dpr = window.devicePixelRatio || 1;
@@ -569,25 +665,25 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // --- Частицы ---
+        // Particle system
         const particles = [];
-        const MAX_PARTICLES = 150;
+        const MAX_PARTICLES = 120;
 
         function spawnParticles(x, y, count) {
             for (let i = 0; i < count; i++) {
                 if (particles.length >= MAX_PARTICLES) break;
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 5 + 2;
+                const speed = Math.random() * 7 + 3;
                 particles.push({
                     x, y,
                     vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed - 2,
-                    size: Math.random() * 5 + 3,
+                    vy: Math.sin(angle) * speed - 3,
+                    size: Math.random() * 6 + 3,
                     rotation: Math.random() * Math.PI * 2,
-                    rotSpeed: (Math.random() - 0.5) * 0.3,
+                    rotSpeed: (Math.random() - 0.5) * 0.4,
                     life: 1.0,
-                    decay: 0.02 + Math.random() * 0.015,
-                    color: Math.random() > 0.5 ? '#ffffff' : '#a0e9ff'
+                    decay: 0.018 + Math.random() * 0.015,
+                    color: Math.random() > 0.5 ? '#ffffff' : '#4fc3f7'
                 });
             }
         }
@@ -602,8 +698,8 @@
                 const p = particles[i];
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
-                p.vy += 0.35 * dt;
-                p.vx *= 0.98;
+                p.vy += 0.4 * dt;
+                p.vx *= 0.97;
                 p.rotation += p.rotSpeed * dt;
                 p.life -= p.decay * dt;
                 
@@ -614,13 +710,13 @@
                 ctx.rotate(p.rotation);
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;
-                ctx.shadowColor = '#80deea';
-                ctx.shadowBlur = 6;
+                ctx.shadowColor = '#4fc3f7';
+                ctx.shadowBlur = 10;
                 ctx.beginPath();
                 ctx.moveTo(0, -p.size);
-                ctx.lineTo(p.size * 0.7, 0);
+                ctx.lineTo(p.size * 0.5, 0);
                 ctx.lineTo(0, p.size);
-                ctx.lineTo(-p.size * 0.7, 0);
+                ctx.lineTo(-p.size * 0.5, 0);
                 ctx.closePath();
                 ctx.fill();
                 ctx.restore();
@@ -657,25 +753,38 @@
             balance += incomePerClick;
             updateUI();
 
-            spawnParticles(x, y, 8);
+            // Эффекты
+            spawnParticles(x, y, 10);
             createFloatingText(incomePerClick, x, y);
-            createFlyingIce(e.clientX, e.clientY);
-            shakeIceberg();
+            createFlyingShard(e.clientX, e.clientY);
+            createFlash(x, y);
+            clickCrystal();
             pulseBalance();
             
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         });
 
-        function shakeIceberg() {
-            iceberg.classList.remove('shake');
-            void iceberg.offsetWidth; 
-            iceberg.classList.add('shake');
+        function clickCrystal() {
+            crystal.classList.remove('clicked');
+            void crystal.offsetWidth;
+            crystal.classList.add('clicked');
         }
 
         function pulseBalance() {
             balanceWrapper.classList.remove('pulse');
             void balanceWrapper.offsetWidth;
             balanceWrapper.classList.add('pulse');
+        }
+
+        // Вспышка
+        function createFlash(x, y) {
+            const flash = document.createElement('div');
+            flash.className = 'flash';
+            flash.style.left = x + 'px';
+            flash.style.top = y + 'px';
+            flash.style.transform = 'translate(-50%, -50%)';
+            gameArea.appendChild(flash);
+            setTimeout(() => flash.remove(), 500);
         }
 
         function createFloatingText(amount, x, y) {
@@ -688,13 +797,13 @@
             setTimeout(() => el.remove(), 900);
         }
 
-        function createFlyingIce(startX, startY) {
-            const ice = document.createElement('div');
-            ice.className = 'flying-ice';
-            ice.textContent = '🧊';
-            ice.style.left = startX + 'px';
-            ice.style.top = startY + 'px';
-            document.body.appendChild(ice);
+        function createFlyingShard(startX, startY) {
+            const shard = document.createElement('div');
+            shard.className = 'flying-ice';
+            shard.textContent = '💎';
+            shard.style.left = startX + 'px';
+            shard.style.top = startY + 'px';
+            document.body.appendChild(shard);
             
             const target = document.querySelector('.ice-icon');
             const targetRect = target.getBoundingClientRect();
@@ -702,27 +811,26 @@
             const targetY = targetRect.top + targetRect.height / 2;
             
             const startTime = performance.now();
-            const duration = 600;
-            const startXVal = startX;
-            const startYVal = startY;
-            const deltaX = targetX - startXVal;
-            const deltaY = targetY - startYVal;
-            const controlX = startXVal + deltaX * 0.5;
-            const controlY = Math.min(startYVal, targetY) - 100;
+            const duration = 650;
+            const deltaX = targetX - startX;
+            const deltaY = targetY - startY;
+            const controlX = startX + deltaX * 0.4;
+            const controlY = Math.min(startY, targetY) - 120;
             
             function animate(now) {
                 const t = Math.min((now - startTime) / duration, 1);
                 const mt = 1 - t;
-                const x = mt * mt * startXVal + 2 * mt * t * controlX + t * t * targetX;
-                const y = mt * mt * startYVal + 2 * mt * t * controlY + t * t * targetY;
-                const scale = 1 - t * 0.5;
+                const x = mt * mt * startX + 2 * mt * t * controlX + t * t * targetX;
+                const y = mt * mt * startY + 2 * mt * t * controlY + t * t * targetY;
+                const scale = 1 - t * 0.6;
                 const opacity = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
+                const rotate = t * 360;
                 
-                ice.style.transform = `translate(${x - startXVal}px, ${y - startYVal}px) scale(${scale})`;
-                ice.style.opacity = opacity;
+                shard.style.transform = `translate(${x - startX}px, ${y - startY}px) scale(${scale}) rotate(${rotate}deg)`;
+                shard.style.opacity = opacity;
                 
                 if (t < 1) requestAnimationFrame(animate);
-                else ice.remove();
+                else shard.remove();
             }
             requestAnimationFrame(animate);
         }
@@ -730,7 +838,6 @@
         function buyUpgrade(type) {
             if (balance >= upgradeCost) {
                 balance -= upgradeCost;
-                upgradeLevel++;
                 upgradeCost = Math.floor(upgradeCost * 1.6);
                 
                 if (type === 1) incomePerClick += 2;
