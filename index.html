@@ -69,7 +69,6 @@
             50% { opacity: 0.7; }
         }
 
-        /* Кристалл — поднят между 38% и 48% → 43% */
         .crystal-wrapper {
             position: absolute;
             top: 43%;
@@ -79,14 +78,7 @@
             height: 280px;
             pointer-events: auto;
             cursor: pointer;
-            clip-path: polygon(
-                50% 0%,
-                95% 35%,
-                88% 75%,
-                50% 100%,
-                12% 75%,
-                5% 35%
-            );
+            clip-path: polygon(50% 0%, 95% 35%, 88% 75%, 50% 100%, 12% 75%, 5% 35%);
         }
 
         .orbit {
@@ -169,7 +161,6 @@
             pointer-events: auto;
         }
 
-        /* --- Score Section --- */
         .score-section {
             text-align: center;
             padding: 15px 0 0 0;
@@ -232,17 +223,15 @@
             min-height: 0;
         }
 
-        /* Кнопка сброса */
-        .reset-btn {
+        .top-btn {
             position: absolute;
             top: 8px;
-            right: 10px;
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            background: rgba(255, 77, 77, 0.15);
-            border: 1px solid rgba(255, 77, 77, 0.4);
-            color: #ff5252;
+            background: rgba(79, 195, 247, 0.15);
+            border: 1px solid rgba(79, 195, 247, 0.4);
+            color: var(--accent-blue);
             font-size: 14px;
             font-weight: 900;
             display: flex;
@@ -254,9 +243,19 @@
             transition: transform 0.1s, background 0.15s;
         }
 
-        .reset-btn:active {
+        .top-btn:active {
             transform: scale(0.9);
-            background: rgba(255, 77, 77, 0.3);
+        }
+
+        .reset-btn {
+            right: 48px;
+            background: rgba(255, 77, 77, 0.15);
+            border-color: rgba(255, 77, 77, 0.4);
+            color: #ff5252;
+        }
+
+        .leaderboard-btn {
+            right: 10px;
         }
 
         /* --- Bottom Panel --- */
@@ -271,7 +270,6 @@
             flex-shrink: 0;
         }
 
-        /* Табы "Добыча" / "Кирка" */
         .main-tabs {
             display: flex;
             justify-content: center;
@@ -288,7 +286,6 @@
             cursor: pointer;
             padding: 4px 8px;
             position: relative;
-            transition: color 0.15s;
         }
 
         .main-tab.active {
@@ -306,7 +303,6 @@
             border-radius: 2px;
         }
 
-        /* Сетка карточек */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -323,7 +319,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            aspect-ratio: 1/1.15;
+            aspect-ratio: 1/1.35;
             cursor: pointer;
             transition: transform 0.1s, background 0.15s, opacity 0.15s;
             position: relative;
@@ -337,12 +333,7 @@
         }
 
         .card.locked {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .card.locked:active {
-            transform: none;
+            opacity: 0.6;
         }
 
         .card-icon {
@@ -373,15 +364,40 @@
             line-height: 1;
         }
 
+        /* Конкретная цена */
         .card-cost {
-            font-size: 9px;
-            font-weight: 700;
-            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 800;
+            color: #ffb74d;
             line-height: 1;
+            font-variant-numeric: tabular-nums;
         }
 
         .card-cost.affordable {
-            color: var(--accent-blue);
+            color: var(--accent-green);
+        }
+
+        /* Прогресс-бар на карточке */
+        .card-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .card-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #00e676);
+            width: 0%;
+            transition: width 0.3s ease-out;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .card-progress-fill.full {
+            background: linear-gradient(90deg, #00e676, #76ff03);
+            box-shadow: 0 0 6px rgba(0, 230, 118, 0.6);
         }
 
         .card-level {
@@ -401,7 +417,6 @@
         .card.purple { background: linear-gradient(135deg, rgba(138, 42, 138, 0.35), rgba(92, 30, 92, 0.55)); border-color: rgba(206, 147, 216, 0.3); }
         .card.blue { background: linear-gradient(135deg, rgba(42, 106, 209, 0.35), rgba(30, 76, 138, 0.55)); border-color: rgba(100, 181, 246, 0.3); }
 
-        /* Панель навигации снизу */
         .nav-bar {
             display: flex;
             justify-content: space-between;
@@ -458,11 +473,144 @@
             30% { opacity: 1; transform: translateY(-25px) scale(1.3); }
             100% { opacity: 0; transform: translateY(-80px) scale(1); }
         }
+
+        /* --- Модалки --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #0a1530, #050a1a);
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            border-radius: 20px;
+            padding: 24px 20px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .modal-reward {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--accent-green);
+            margin: 12px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .modal-btn {
+            background: linear-gradient(135deg, var(--accent-blue), #0288d1);
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: transform 0.1s;
+            font-family: inherit;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Лидерборд --- */
+        .lb-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(79, 195, 247, 0.08);
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        .lb-row.me {
+            background: rgba(0, 230, 118, 0.15);
+            border: 1px solid rgba(0, 230, 118, 0.4);
+        }
+
+        .lb-rank {
+            font-weight: 900;
+            color: var(--accent-blue);
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .lb-rank.top1 { color: #ffd700; }
+        .lb-rank.top2 { color: #c0c0c0; }
+        .lb-rank.top3 { color: #cd7f32; }
+
+        .lb-name {
+            flex: 1;
+            text-align: left;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .lb-score {
+            font-weight: 800;
+            color: var(--accent-green);
+            font-variant-numeric: tabular-nums;
+        }
     </style>
 </head>
 <body>
 
-    <!-- ФОНОВЫЙ СЛОЙ -->
     <div class="bg-layer">
         <div class="stars-bg"></div>
         
@@ -536,11 +684,11 @@
         </div>
     </div>
 
-    <!-- UI СЛОЙ -->
     <div class="app-layer">
         
         <div class="score-section">
-            <div class="reset-btn" id="reset-btn" title="Сброс">↺</div>
+            <div class="top-btn leaderboard-btn" id="leaderboard-btn" title="Лидерборд">🏆</div>
+            <div class="top-btn reset-btn" id="reset-btn" title="Сброс">↺</div>
             <div class="subtitle">ВАШ ЛЁД</div>
             <div class="balance" id="balance-wrapper">
                 <span id="balance">0</span>
@@ -566,32 +714,24 @@
         <div class="empty-zone"></div>
 
         <div class="bottom-panel">
-            <!-- Два основных таба -->
             <div class="main-tabs">
                 <div class="main-tab active" data-tab="mining">Добыча</div>
                 <div class="main-tab" data-tab="pickaxe">Кирка</div>
             </div>
 
-            <!-- Сетка карточек -->
-            <div class="cards-grid" id="cards-grid">
-                <!-- Заполняется через JS -->
-            </div>
+            <div class="cards-grid" id="cards-grid"></div>
 
             <div class="nav-bar">
                 <div class="nav-item active">
                     <span class="nav-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/></svg>
                     </span>
                     <span>Лёд</span>
                 </div>
                 <div class="nav-item">
                     <span class="nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="20" x2="18" y2="10"/>
-                            <line x1="12" y1="20" x2="12" y2="4"/>
-                            <line x1="6" y1="20" x2="6" y2="14"/>
+                            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
                         </svg>
                     </span>
                     <span>Рейтинг</span>
@@ -599,10 +739,7 @@
                 <div class="nav-item">
                     <span class="nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14.5 17.5L3 6V3h3l11.5 11.5"/>
-                            <path d="M13 19l6-6"/>
-                            <path d="M16 16l4 4"/>
-                            <path d="M19 21l2-2"/>
+                            <path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/>
                         </svg>
                     </span>
                     <span>Боссы</span>
@@ -618,8 +755,7 @@
                 <div class="nav-item">
                     <span class="nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                         </svg>
                     </span>
                     <span>Профиль</span>
@@ -628,14 +764,54 @@
         </div>
     </div>
 
+    <!-- Модалка оффлайн-дохода -->
+    <div class="modal-overlay" id="offline-modal">
+        <div class="modal">
+            <div class="modal-icon">❄️</div>
+            <div class="modal-title">С возвращением!</div>
+            <div class="modal-text">Пока вас не было, кристалл добыл:</div>
+            <div class="modal-reward" id="offline-amount">0</div>
+            <div class="modal-text" id="offline-time"></div>
+            <button class="modal-btn" onclick="closeOfflineModal()">Забрать</button>
+        </div>
+    </div>
+
+    <!-- Модалка лидерборда -->
+    <div class="modal-overlay" id="lb-modal">
+        <div class="modal">
+            <div class="modal-icon">🏆</div>
+            <div class="modal-title">Топ игроков</div>
+            <div class="lb-list" id="lb-list">
+                <div class="modal-text">Загрузка...</div>
+            </div>
+            <button class="modal-btn" onclick="closeLeaderboard()">Закрыть</button>
+        </div>
+    </div>
+
     <script>
+        // ==================================================
+        // ⚙️ НАСТРОЙКИ ЛИДЕРБОРДА
+        // ==================================================
+        // Замени на свой URL из Google Apps Script / Supabase
+        // Если оставить пустым — лидерборд покажет только твой результат
+        const LEADERBOARD_API = ''; // Например: 'https://script.google.com/macros/s/XXX/exec'
+        
+        // ==================================================
+
         // === TELEGRAM ===
         let tg = window.Telegram?.WebApp;
+        let TG_USER = null;
+        
         if (tg) {
             tg.ready();
             tg.expand();
             tg.setHeaderColor('#03060f');
             tg.setBackgroundColor('#03060f');
+            
+            // Получаем данные пользователя
+            if (tg.initDataUnsafe?.user) {
+                TG_USER = tg.initDataUnsafe.user;
+            }
         } else {
             tg = {
                 close: () => {},
@@ -646,30 +822,25 @@
         }
 
         // === ДАННЫЕ АПГРЕЙДОВ ===
-        // Автономная добыча (таб "Добыча")
         const MINING_UPGRADES = [
-            { id: 'auto1', name: 'Кристалл', baseCost: 25, costMult: 1.15, effect: 1, icon: 'cyan',    color: 'orange' },
-            { id: 'auto2', name: 'Ледник',   baseCost: 250, costMult: 1.15, effect: 8, icon: 'blue',    color: 'green' },
+            { id: 'auto1', name: 'Кристалл', baseCost: 25, costMult: 1.15, effect: 1, icon: 'cyan', color: 'orange' },
+            { id: 'auto2', name: 'Ледник',   baseCost: 250, costMult: 1.15, effect: 8, icon: 'blue', color: 'green' },
             { id: 'auto3', name: 'Айсберг',  baseCost: 2500, costMult: 1.15, effect: 45, icon: 'purple', color: 'purple' },
-            { id: 'auto4', name: 'Глетчер',  baseCost: 25000, costMult: 1.15, effect: 260, icon: 'deep',  color: 'blue' },
+            { id: 'auto4', name: 'Глетчер',  baseCost: 25000, costMult: 1.15, effect: 260, icon: 'deep', color: 'blue' },
         ];
 
-        // Улучшения за клик (таб "Кирка")
         const CLICK_UPGRADES = [
-            { id: 'click1', name: 'Рука',   baseCost: 15,  costMult: 1.4, effect: 1, icon: 'hand',  color: 'orange' },
-            { id: 'click2', name: 'Кирка',  baseCost: 150, costMult: 1.4, effect: 5, icon: 'pick',  color: 'green' },
+            { id: 'click1', name: 'Рука',   baseCost: 15,  costMult: 1.4, effect: 1, icon: 'hand', color: 'orange' },
+            { id: 'click2', name: 'Кирка',  baseCost: 150, costMult: 1.4, effect: 5, icon: 'pick', color: 'green' },
             { id: 'click3', name: 'Дрель',  baseCost: 1500, costMult: 1.4, effect: 25, icon: 'drill', color: 'purple' },
             { id: 'click4', name: 'Лазер',  baseCost: 15000, costMult: 1.4, effect: 120, icon: 'laser', color: 'blue' },
         ];
 
-        // SVG иконки
         const ICONS = {
-            // Иконки авто-добычи
             cyan: `<svg viewBox="0 0 24 24" fill="#4fc3f7"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/></svg>`,
             blue: `<svg viewBox="0 0 24 24" fill="#29b6f6"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/><polygon points="12,2 20,7 12,10" fill="#b3e5fc"/></svg>`,
             purple: `<svg viewBox="0 0 24 24" fill="#ba68c8"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/><polygon points="12,2 20,7 12,10" fill="#e1bee7"/></svg>`,
             deep: `<svg viewBox="0 0 24 24" fill="#0277bd"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/><polygon points="12,2 20,7 12,10" fill="#4fc3f7"/></svg>`,
-            // Иконки улучшений клика
             hand: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffd54f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v10"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>`,
             pick: `<svg viewBox="0 0 24 24" fill="none" stroke="#81c784" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`,
             drill: `<svg viewBox="0 0 24 24" fill="none" stroke="#ce93d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M8 6l4-3 4 3"/><path d="M8 18l4 3 4-3"/><circle cx="12" cy="12" r="3"/></svg>`,
@@ -677,30 +848,29 @@
         };
 
         // === СОСТОЯНИЕ ИГРЫ ===
-        const SAVE_KEY = 'ice_crystal_clicker_save_v1';
+        const SAVE_KEY = 'ice_crystal_clicker_save_v2';
+        const OFFLINE_MAX_HOURS = 4; // максимум оффлайн-дохода
+        const OFFLINE_RATE = 0.5;    // 50% от пассивного дохода
         
         let state = {
             balance: 0,
-            clickLevel: 0,   // доход за клик = 1 + сумма улучшений клика
-            clickIncome: 1,  // базовый 1 + докупки
+            clickIncome: 1,
             autoIncome: 0,
             activeTab: 'mining',
-            upgrades: {}     // id -> уровень
+            upgrades: {},
+            lastSeen: Date.now()
         };
 
-        // Инициализация уровней
         [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => {
             state.upgrades[u.id] = state.upgrades[u.id] || 0;
         });
 
-        // Загрузка
         function loadState() {
             try {
                 const saved = localStorage.getItem(SAVE_KEY);
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     state = { ...state, ...parsed };
-                    // гарантия что все ключи апгрейдов есть
                     [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => {
                         if (state.upgrades[u.id] === undefined) state.upgrades[u.id] = 0;
                     });
@@ -708,14 +878,13 @@
             } catch (e) { console.warn('Load error', e); }
         }
 
-        // Сохранение
         function saveState() {
             try {
+                state.lastSeen = Date.now();
                 localStorage.setItem(SAVE_KEY, JSON.stringify(state));
             } catch (e) { console.warn('Save error', e); }
         }
 
-        // === ФОРМАТ ЧИСЕЛ ===
         function formatNumber(num) {
             if (num >= 1e15) return (num / 1e15).toFixed(2) + ' квдрлн';
             if (num >= 1e12) return (num / 1e12).toFixed(2) + ' трлн';
@@ -725,32 +894,32 @@
             return Math.floor(num).toString();
         }
 
-        // === СТОИМОСТЬ АПГРЕЙДА ===
+        function formatTime(seconds) {
+            if (seconds < 60) return `${Math.floor(seconds)} сек`;
+            if (seconds < 3600) return `${Math.floor(seconds/60)} мин`;
+            return `${Math.floor(seconds/3600)} ч ${Math.floor((seconds%3600)/60)} мин`;
+        }
+
         function getCost(upgrade) {
             const level = state.upgrades[upgrade.id] || 0;
             return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMult, level));
         }
 
-        // === ПЕРЕСЧЁТ ДОХОДА ===
         function recalcIncome() {
             let clickBonus = 0;
             let autoBonus = 0;
             
             CLICK_UPGRADES.forEach(u => {
-                const lvl = state.upgrades[u.id] || 0;
-                clickBonus += u.effect * lvl;
+                clickBonus += u.effect * (state.upgrades[u.id] || 0);
             });
-            
             MINING_UPGRADES.forEach(u => {
-                const lvl = state.upgrades[u.id] || 0;
-                autoBonus += u.effect * lvl;
+                autoBonus += u.effect * (state.upgrades[u.id] || 0);
             });
             
             state.clickIncome = 1 + clickBonus;
             state.autoIncome = autoBonus;
         }
 
-        // === ОБНОВЛЕНИЕ UI ===
         const balanceEl = document.getElementById('balance');
         const balanceWrapper = document.getElementById('balance-wrapper');
         const incomeSecEl = document.getElementById('income-per-sec');
@@ -765,7 +934,6 @@
             incomeClickEl.textContent = `+ ${formatNumber(state.clickIncome)}/удар`;
         }
 
-        // === РЕНДЕР КАРТОЧЕК ===
         function renderCards() {
             const list = state.activeTab === 'mining' ? MINING_UPGRADES : CLICK_UPGRADES;
             
@@ -775,7 +943,9 @@
                 const canAfford = state.balance >= cost;
                 const totalEffect = u.effect * level;
                 
-                // Формат эффекта
+                // Прогресс: сколько накоплено от цены (0-100%)
+                const progress = Math.min(100, (state.balance / cost) * 100);
+                
                 let effectLabel;
                 if (state.activeTab === 'mining') {
                     effectLabel = `+${formatNumber(totalEffect)}/сек`;
@@ -790,20 +960,20 @@
                         <div class="card-title">${u.name}</div>
                         <div class="card-effect">${effectLabel}</div>
                         <div class="card-cost ${canAfford ? 'affordable' : ''}">${formatNumber(cost)}</div>
+                        <div class="card-progress">
+                            <div class="card-progress-fill ${canAfford ? 'full' : ''}" style="width:${progress}%"></div>
+                        </div>
                     </div>
                 `;
             }).join('');
             
-            // Обработчики
             cardsGrid.querySelectorAll('.card').forEach(card => {
                 card.addEventListener('click', () => {
-                    const id = card.dataset.id;
-                    tryBuyUpgrade(id);
+                    tryBuyUpgrade(card.dataset.id);
                 });
             });
         }
 
-        // === ПОКУПКА АПГРЕЙДА ===
         function tryBuyUpgrade(id) {
             const all = [...MINING_UPGRADES, ...CLICK_UPGRADES];
             const u = all.find(x => x.id === id);
@@ -826,7 +996,6 @@
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
 
-        // === ТАБЫ ===
         document.querySelectorAll('.main-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
@@ -837,7 +1006,6 @@
             });
         });
 
-        // === КЛИК ПО КРИСТАЛЛУ ===
         crystalWrapper.addEventListener('click', (e) => {
             e.stopPropagation();
             const x = e.clientX;
@@ -845,7 +1013,7 @@
 
             state.balance += state.clickIncome;
             updateUI();
-            renderCards(); // обновить доступность карточек
+            renderCards();
 
             createFloatingText(state.clickIncome, x, y);
             clickCrystal();
@@ -853,7 +1021,6 @@
             
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
-            // Сохраняем не каждый клик, а раз в ~10 кликов или через throttle
             throttledSave();
         });
 
@@ -869,7 +1036,6 @@
             balanceWrapper.classList.add('pulse');
         }
 
-        // === ВСПЛЫВАЮЩИЙ ТЕКСТ ===
         function createFloatingText(amount, x, y) {
             const el = document.createElement('div');
             el.className = 'float-text';
@@ -890,17 +1056,141 @@
             }
         }, 1000);
 
-        // === THROTTLED SAVE ===
         let saveTimeout = null;
         function throttledSave() {
             if (saveTimeout) return;
             saveTimeout = setTimeout(() => {
                 saveState();
                 saveTimeout = null;
-            }, 2000); // Сохраняем не чаще раза в 2 сек
+            }, 2000);
         }
 
-        // === СБРОС ===
+        // ==================================================
+        // ОФФЛАЙН-ДОХОД
+        // ==================================================
+        function calculateOffline() {
+            if (!state.lastSeen) return null;
+            
+            const now = Date.now();
+            const diffMs = now - state.lastSeen;
+            const diffSec = Math.floor(diffMs / 1000);
+            
+            // Минимум 60 секунд оффлайна
+            if (diffSec < 60) return null;
+            if (state.autoIncome <= 0) return null;
+            
+            const maxSec = OFFLINE_MAX_HOURS * 3600;
+            const effectiveSec = Math.min(diffSec, maxSec);
+            const earned = Math.floor(state.autoIncome * effectiveSec * OFFLINE_RATE);
+            
+            if (earned <= 0) return null;
+            
+            return { earned, seconds: diffSec, effectiveSec };
+        }
+
+        function showOfflineModal(data) {
+            document.getElementById('offline-amount').textContent = '+' + formatNumber(data.earned) + ' 💎';
+            
+            let timeText;
+            if (data.seconds >= OFFLINE_MAX_HOURS * 3600) {
+                timeText = `Отсутствовали ${formatTime(data.seconds)}. Начислено за первые ${OFFLINE_MAX_HOURS} ч (${Math.round(OFFLINE_RATE*100)}%).`;
+            } else {
+                timeText = `Отсутствовали ${formatTime(data.seconds)}. Начислено ${Math.round(OFFLINE_RATE*100)}% от дохода.`;
+            }
+            document.getElementById('offline-time').textContent = timeText;
+            
+            document.getElementById('offline-modal').classList.add('show');
+            state.balance += data.earned;
+            updateUI();
+            renderCards();
+            saveState();
+        }
+
+        window.closeOfflineModal = function() {
+            document.getElementById('offline-modal').classList.remove('show');
+        };
+
+        // ==================================================
+        // ЛИДЕРБОРД
+        // ==================================================
+        window.closeLeaderboard = function() {
+            document.getElementById('lb-modal').classList.remove('show');
+        };
+
+        document.getElementById('leaderboard-btn').addEventListener('click', async () => {
+            document.getElementById('lb-modal').classList.add('show');
+            await loadLeaderboard();
+        });
+
+        async function loadLeaderboard() {
+            const lbList = document.getElementById('lb-list');
+            lbList.innerHTML = '<div class="modal-text">Загрузка...</div>';
+            
+            const myId = TG_USER?.id || 'local';
+            const myName = TG_USER ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' : 'Вы (локально)';
+            
+            // Если API не настроен — показываем только себя
+            if (!LEADERBOARD_API) {
+                lbList.innerHTML = `
+                    <div class="modal-text" style="font-size:12px; margin-bottom:8px;">
+                        API не настроен. Настройте LEADERBOARD_API, чтобы видеть других игроков.
+                    </div>
+                    <div class="lb-row me">
+                        <div class="lb-rank top1">1</div>
+                        <div class="lb-name">${myName}</div>
+                        <div class="lb-score">${formatNumber(state.balance)}</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Отправляем свой score
+            try {
+                await fetch(LEADERBOARD_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: myId,
+                        name: myName,
+                        username: TG_USER?.username || '',
+                        photo: TG_USER?.photo_url || '',
+                        score: Math.floor(state.balance),
+                        initData: tg.initData || '' // для проверки на сервере
+                    })
+                });
+            } catch (e) { console.warn('Score upload failed', e); }
+            
+            // Загружаем топ
+            try {
+                const res = await fetch(`${LEADERBOARD_API}?limit=100`);
+                const data = await res.json();
+                
+                if (!Array.isArray(data) || data.length === 0) {
+                    lbList.innerHTML = '<div class="modal-text">Пока никто не играл</div>';
+                    return;
+                }
+                
+                lbList.innerHTML = data.map((row, i) => {
+                    const rank = i + 1;
+                    const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+                    const isMe = String(row.user_id) === String(myId) ? 'me' : '';
+                    return `
+                        <div class="lb-row ${isMe}">
+                            <div class="lb-rank ${rankClass}">${rank}</div>
+                            <div class="lb-name">${row.name || 'Игрок'}</div>
+                            <div class="lb-score">${formatNumber(row.score)}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                lbList.innerHTML = '<div class="modal-text">Ошибка загрузки</div>';
+                console.warn('Leaderboard load failed', e);
+            }
+        }
+
+        // ==================================================
+        // СБРОС
+        // ==================================================
         document.getElementById('reset-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             if (tg.showConfirm) {
@@ -916,17 +1206,32 @@
             }
         });
 
-        // === ИНИЦИАЛИЗАЦИЯ ===
+        // ==================================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ==================================================
         loadState();
         recalcIncome();
         
-        // Восстановить активный таб
+        // Проверяем оффлайн-доход до отображения UI
+        const offlineData = calculateOffline();
+        
         document.querySelectorAll('.main-tab').forEach(t => {
             t.classList.toggle('active', t.dataset.tab === state.activeTab);
         });
         
         updateUI();
         renderCards();
+        
+        // Показать модалку оффлайн-дохода если есть
+        if (offlineData) {
+            setTimeout(() => showOfflineModal(offlineData), 400);
+        }
+        
+        // Сохраняем при выходе
+        window.addEventListener('beforeunload', saveState);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) saveState();
+        });
     </script>
 </body>
 </html>
