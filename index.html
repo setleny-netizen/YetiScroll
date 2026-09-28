@@ -12,7 +12,6 @@
             --ice-light: #ffffff;
             --ice-mid: #a0e9ff;
             --ice-dark: #4dd0e1;
-            --ice-deep: #00838f;
             --ice-glow: rgba(128, 222, 234, 0.8);
             --accent-green: #00e676;
             --accent-blue: #40c4ff;
@@ -73,11 +72,23 @@
             color: var(--ice-light);
             text-shadow: 0 0 20px var(--ice-glow), 0 0 40px rgba(64, 196, 255, 0.6);
             font-variant-numeric: tabular-nums;
+            position: relative;
         }
 
         .ice-icon {
             font-size: 34px;
             filter: drop-shadow(0 0 15px var(--ice-glow));
+        }
+
+        /* Пульсация баланса при получении льда */
+        .balance.pulse {
+            animation: balancePulse 0.3s ease-out;
+        }
+
+        @keyframes balancePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
         }
 
         .income-info {
@@ -100,18 +111,28 @@
             align-items: center;
             overflow: hidden;
             cursor: pointer;
-            perspective: 1000px;
+        }
+
+        /* Canvas для частиц — лежит ПОД айсбергом, но над фоном */
+        #particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
         }
 
         /* Контейнер айсберга */
         .iceberg-container {
             position: relative;
-            width: 280px;
-            height: 380px;
+            width: 320px;
+            height: 420px;
             display: flex;
             justify-content: center;
-            align-items: flex-end;
-            transition: transform 0.1s;
+            align-items: center;
+            z-index: 2;
         }
 
         /* SVG Айсберг */
@@ -124,13 +145,11 @@
             will-change: transform;
         }
 
-        /* Анимация покачивания на воде */
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(-0.5deg); }
             50% { transform: translateY(-12px) rotate(0.5deg); }
         }
 
-        /* Анимация удара */
         .shake {
             animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }
@@ -142,7 +161,6 @@
             40%, 60% { transform: translate3d(8px, 0, 0) rotate(2deg); }
         }
 
-        /* Свечение вокруг айсберга */
         .iceberg-glow {
             position: absolute;
             top: 50%;
@@ -161,33 +179,33 @@
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
 
-        /* --- Частицы льда --- */
-        .ice-particle {
-            position: absolute;
-            background: linear-gradient(135deg, #ffffff, #a0e9ff);
-            border-radius: 2px;
-            pointer-events: none;
-            z-index: 100;
-            box-shadow: 0 0 12px var(--ice-glow), 0 0 4px #fff;
-            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-        }
-
-        /* --- Всплывающий текст --- */
+        /* --- Всплывающий текст (остается DOM — его мало) --- */
         .float-text {
             position: absolute;
             color: #ffffff;
             font-weight: 900;
             pointer-events: none;
-            animation: floatUp 1s ease-out forwards;
+            animation: floatUp 0.9s ease-out forwards;
             z-index: 100;
             text-shadow: 0 0 15px var(--ice-glow), 0 0 30px var(--accent-blue);
-            font-size: 24px;
+            font-size: 22px;
             font-variant-numeric: tabular-nums;
+            will-change: transform, opacity;
         }
 
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-100px) scale(1.6); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.4); }
+        }
+
+        /* --- Летящий кусок льда к балансу --- */
+        .flying-ice {
+            position: fixed;
+            font-size: 22px;
+            pointer-events: none;
+            z-index: 200;
+            filter: drop-shadow(0 0 10px var(--ice-glow));
+            will-change: transform, opacity;
         }
 
         /* --- Bottom Panel --- */
@@ -332,7 +350,7 @@
 
     <div class="score-section">
         <div class="subtitle">ВАШ ЛЁД</div>
-        <div class="balance">
+        <div class="balance" id="balance-wrapper">
             <span id="balance">0</span>
             <span class="ice-icon">🧊</span>
         </div>
@@ -343,11 +361,14 @@
     </div>
 
     <div class="game-area" id="game-area">
+        <!-- Canvas для частиц осколков -->
+        <canvas id="particles-canvas"></canvas>
+        
         <div class="iceberg-container" id="iceberg-container">
             <div class="iceberg-glow"></div>
             
-            <!-- КРАСИВЫЙ SVG АЙСБЕРГ -->
-            <svg class="iceberg-svg" id="iceberg" viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg">
+            <!-- SVG Айсберг (уменьшен, отражение уменьшено) -->
+            <svg class="iceberg-svg" id="iceberg" viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="iceTopGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
@@ -376,89 +397,97 @@
                     </filter>
                 </defs>
                 
-                <path d="M 60 220 
-                         C 40 260, 30 320, 70 360 
-                         C 110 380, 170 380, 210 360 
-                         C 250 320, 240 260, 220 220 
+                <!-- ПОДВОДНАЯ ЧАСТЬ -->
+                <path d="M 80 240 
+                         C 60 280, 55 340, 90 375 
+                         C 125 395, 195 395, 230 375 
+                         C 265 340, 260 280, 240 240 
                          Z" 
                       fill="url(#iceBottomGradient)" 
                       filter="url(#glow)"
-                      opacity="0.7"/>
+                      opacity="0.6"/>
                 
-                <path d="M 70 220 
-                         L 60 180 
-                         C 55 150, 70 100, 90 70 
-                         C 105 45, 130 25, 150 20 
-                         C 170 18, 190 30, 205 55 
-                         C 220 80, 225 120, 215 160 
-                         L 210 220 
-                         C 200 225, 80 225, 70 220
+                <!-- ОСНОВНАЯ НАДВОДНАЯ ЧАСТЬ -->
+                <path d="M 90 240 
+                         L 82 200 
+                         C 78 170, 92 120, 112 90 
+                         C 127 65, 150 48, 165 45 
+                         C 183 43, 200 55, 215 78 
+                         C 230 102, 235 140, 228 180 
+                         L 222 240 
+                         C 210 245, 100 245, 90 240
                          Z" 
                       fill="url(#iceTopGradient)"/>
                 
-                <path d="M 70 220 
-                         L 60 180 
-                         C 55 150, 70 100, 90 70 
-                         C 100 60, 110 50, 120 45
-                         L 130 80
-                         C 110 120, 105 170, 110 220
+                <!-- БОКОВЫЕ ГРАНИ -->
+                <path d="M 90 240 
+                         L 82 200 
+                         C 78 170, 92 120, 112 90 
+                         C 122 80, 132 72, 142 68
+                         L 150 100
+                         C 130 140, 125 190, 128 240
                          Z" 
                       fill="#b2ebf2" 
                       opacity="0.6"/>
                 
-                <path d="M 210 220 
-                         L 215 160 
-                         C 225 120, 220 80, 205 55 
-                         C 200 45, 190 38, 180 35
-                         L 175 70
-                         C 190 100, 195 160, 190 220
+                <path d="M 222 240 
+                         L 228 180 
+                         C 235 140, 230 102, 215 78 
+                         C 210 70, 202 62, 193 58
+                         L 188 90
+                         C 200 120, 205 180, 200 240
                          Z" 
                       fill="#4dd0e1" 
                       opacity="0.5"/>
                 
-                <path d="M 90 70 
-                         C 105 45, 130 25, 150 20 
-                         C 155 30, 155 60, 145 90
-                         C 130 85, 110 80, 90 70
+                <!-- БЛИК -->
+                <path d="M 112 90 
+                         C 127 65, 150 48, 165 45 
+                         C 170 55, 168 85, 158 112
+                         C 143 108, 125 100, 112 90
                          Z" 
                       fill="url(#iceHighlight)"/>
                 
-                <path d="M 130 60 L 125 120 L 135 140 L 128 200" 
+                <!-- ТРЕЩИНЫ -->
+                <path d="M 148 85 L 145 145 L 155 165 L 148 220" 
                       stroke="#4dd0e1" 
                       stroke-width="1.5" 
                       fill="none" 
                       opacity="0.6"/>
                 
-                <path d="M 170 50 L 175 100 L 165 130" 
+                <path d="M 185 78 L 190 128 L 180 158" 
                       stroke="#26c6da" 
                       stroke-width="1" 
                       fill="none" 
                       opacity="0.5"/>
                 
-                <path d="M 100 150 L 115 170 L 105 200" 
+                <path d="M 118 172 L 132 192 L 122 222" 
                       stroke="#80deea" 
                       stroke-width="1" 
                       fill="none" 
                       opacity="0.4"/>
                 
-                <path d="M 110 100 
-                         C 120 90, 140 85, 160 90 
-                         C 165 110, 165 130, 160 150
-                         C 140 145, 120 145, 110 150
-                         C 105 130, 105 110, 110 100
+                <!-- ВНУТРЕННЯЯ ГРАНЬ -->
+                <path d="M 130 120 
+                         C 140 110, 158 105, 175 110 
+                         C 180 130, 180 150, 175 170
+                         C 158 165, 140 165, 130 170
+                         C 125 150, 125 130, 130 120
                          Z" 
                       fill="#ffffff" 
                       opacity="0.15"/>
                 
-                <line x1="0" y1="220" x2="280" y2="220" 
+                <!-- ЛИНИЯ ВОДЫ -->
+                <line x1="0" y1="240" x2="320" y2="240" 
                       stroke="#40c4ff" 
                       stroke-width="2" 
-                      opacity="0.8"
+                      opacity="0.7"
                       filter="url(#glow)"/>
                 
-                <ellipse cx="140" cy="230" rx="80" ry="8" 
+                <!-- ОТРАЖЕНИЕ (уменьшено!) -->
+                <ellipse cx="160" cy="250" rx="55" ry="5" 
                          fill="#40c4ff" 
-                         opacity="0.3" 
+                         opacity="0.2" 
                          filter="url(#glow)"/>
             </svg>
         </div>
@@ -537,6 +566,7 @@
             };
         }
 
+        // --- Game State ---
         let balance = 0;
         let incomePerSecond = 0;
         let incomePerClick = 1;
@@ -544,11 +574,105 @@
         let upgradeCost = 50;
 
         const balanceEl = document.getElementById('balance');
+        const balanceWrapper = document.getElementById('balance-wrapper');
         const incomeSecEl = document.getElementById('income-per-sec');
         const incomeClickEl = document.getElementById('income-per-click');
         const gameArea = document.getElementById('game-area');
         const iceberg = document.getElementById('iceberg');
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
 
+        // --- Canvas размер с учетом DPR (для четкости на retina) ---
+        let canvasW = 0, canvasH = 0;
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = gameArea.getBoundingClientRect();
+            canvasW = rect.width;
+            canvasH = rect.height;
+            canvas.width = canvasW * dpr;
+            canvas.height = canvasH * dpr;
+            canvas.style.width = canvasW + 'px';
+            canvas.style.height = canvasH + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // --- Система частиц на Canvas ---
+        const particles = [];
+        const MAX_PARTICLES = 200; // Защита от перегрузки
+
+        function spawnParticles(x, y, count) {
+            for (let i = 0; i < count; i++) {
+                if (particles.length >= MAX_PARTICLES) break;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 3;
+                const size = Math.random() * 5 + 3;
+                
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 2, // Немного вверх
+                    size: size,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.3,
+                    life: 1.0,
+                    decay: 0.02 + Math.random() * 0.015,
+                    color: Math.random() > 0.5 ? '#ffffff' : '#a0e9ff'
+                });
+            }
+        }
+
+        let lastTime = 0;
+        function animateParticles(time) {
+            const dt = Math.min((time - lastTime) / 16.67, 2); // Нормализация к 60fps
+            lastTime = time;
+            
+            ctx.clearRect(0, 0, canvasW, canvasH);
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                
+                // Физика
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.vy += 0.35 * dt; // Гравитация
+                p.vx *= 0.98; // Трение
+                p.rotation += p.rotSpeed * dt;
+                p.life -= p.decay * dt;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                
+                // Рисуем ромб (кристалл)
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = '#80deea';
+                ctx.shadowBlur = 8;
+                
+                ctx.beginPath();
+                ctx.moveTo(0, -p.size);
+                ctx.lineTo(p.size * 0.7, 0);
+                ctx.lineTo(0, p.size);
+                ctx.lineTo(-p.size * 0.7, 0);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            requestAnimationFrame(animateParticles);
+        }
+        requestAnimationFrame(animateParticles);
+
+        // --- Форматирование чисел ---
         function formatNumber(num) {
             if (num >= 1e9) return (num / 1e9).toFixed(2) + ' млрд';
             if (num >= 1e6) return (num / 1e6).toFixed(2) + ' млн';
@@ -562,6 +686,7 @@
             incomeClickEl.textContent = `+ ${formatNumber(incomePerClick)}/удар`;
         }
 
+        // --- Пассивный доход ---
         setInterval(() => {
             if (incomePerSecond > 0) {
                 balance += incomePerSecond;
@@ -569,6 +694,7 @@
             }
         }, 1000);
 
+        // --- Клик по айсбергу ---
         gameArea.addEventListener('click', (e) => {
             const rect = gameArea.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -577,9 +703,12 @@
             balance += incomePerClick;
             updateUI();
 
+            // Эффекты
+            spawnParticles(x, y, 8);
             createFloatingText(incomePerClick, x, y);
-            createIceParticles(x, y);
+            createFlyingIce(e.clientX, e.clientY);
             shakeIceberg();
+            pulseBalance();
             
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         });
@@ -590,48 +719,74 @@
             iceberg.classList.add('shake');
         }
 
+        function pulseBalance() {
+            balanceWrapper.classList.remove('pulse');
+            void balanceWrapper.offsetWidth;
+            balanceWrapper.classList.add('pulse');
+        }
+
+        // --- Всплывающий текст ---
         function createFloatingText(amount, x, y) {
             const el = document.createElement('div');
             el.className = 'float-text';
             el.textContent = '+' + formatNumber(amount);
             el.style.left = (x - 20) + 'px';
             el.style.top = (y - 20) + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1000);
+            gameArea.appendChild(el);
+            setTimeout(() => el.remove(), 900);
         }
 
-        function createIceParticles(x, y) {
-            const particleCount = 8;
+        // --- Летящий кусок льда к балансу ---
+        function createFlyingIce(startX, startY) {
+            const ice = document.createElement('div');
+            ice.className = 'flying-ice';
+            ice.textContent = '🧊';
+            ice.style.left = startX + 'px';
+            ice.style.top = startY + 'px';
+            document.body.appendChild(ice);
             
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'ice-particle';
+            // Получаем координаты цели (иконки льда в балансе)
+            const target = document.querySelector('.ice-icon');
+            const targetRect = target.getBoundingClientRect();
+            const targetX = targetRect.left + targetRect.width / 2;
+            const targetY = targetRect.top + targetRect.height / 2;
+            
+            // Анимация через requestAnimationFrame для плавности и контроля
+            const startTime = performance.now();
+            const duration = 600; // мс
+            const startXVal = startX;
+            const startYVal = startY;
+            const deltaX = targetX - startXVal;
+            const deltaY = targetY - startYVal;
+            
+            // Контрольная точка для дуги (изгиб вверх)
+            const controlX = startXVal + deltaX * 0.5;
+            const controlY = Math.min(startYVal, targetY) - 100;
+            
+            function animate(now) {
+                const t = Math.min((now - startTime) / duration, 1);
+                // Квадратичная кривая Безье
+                const mt = 1 - t;
+                const x = mt * mt * startXVal + 2 * mt * t * controlX + t * t * targetX;
+                const y = mt * mt * startYVal + 2 * mt * t * controlY + t * t * targetY;
                 
-                const size = Math.random() * 10 + 5;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
+                const scale = 1 - t * 0.5;
+                const opacity = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
                 
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
+                ice.style.transform = `translate(${x - startXVal}px, ${y - startYVal}px) scale(${scale})`;
+                ice.style.opacity = opacity;
                 
-                const angle = Math.random() * Math.PI * 2;
-                const distance = Math.random() * 150 + 80;
-                const tx = Math.cos(angle) * distance;
-                const ty = Math.sin(angle) * distance;
-                
-                particle.animate([
-                    { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1 },
-                    { transform: `translate(${tx}px, ${ty}px) scale(0.3) rotate(${Math.random() * 720}deg)`, opacity: 0 }
-                ], {
-                    duration: 700 + Math.random() * 500,
-                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
-                });
-                
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 1200);
+                if (t < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    ice.remove();
+                }
             }
+            
+            requestAnimationFrame(animate);
         }
 
+        // --- Улучшения ---
         function buyUpgrade(type) {
             if (balance >= upgradeCost) {
                 balance -= upgradeCost;
@@ -645,10 +800,8 @@
                 
                 updateUI();
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Улучшение куплено!");
             } else {
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert("Недостаточно льда! Нужно " + formatNumber(upgradeCost));
             }
         }
 
