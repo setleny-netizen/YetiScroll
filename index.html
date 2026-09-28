@@ -193,18 +193,15 @@
             transform: scale(1.1);
         }
 
+        /* Эмодзи вместо SVG иконки */
         .ice-icon {
-            width: 34px;
-            height: 34px;
+            font-size: 36px;
+            line-height: 1;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .ice-icon svg {
-            width: 100%;
-            height: 100%;
-            display: block;
+            width: 40px;
+            height: 40px;
         }
 
         .income-info {
@@ -229,9 +226,9 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: rgba(79, 195, 247, 0.15);
-            border: 1px solid rgba(79, 195, 247, 0.4);
-            color: var(--accent-blue);
+            background: rgba(255, 77, 77, 0.15);
+            border: 1px solid rgba(255, 77, 77, 0.4);
+            color: #ff5252;
             font-size: 14px;
             font-weight: 900;
             display: flex;
@@ -241,21 +238,12 @@
             pointer-events: auto;
             z-index: 100;
             transition: transform 0.1s, background 0.15s;
+            right: 10px;
         }
 
         .top-btn:active {
             transform: scale(0.9);
-        }
-
-        .reset-btn {
-            right: 48px;
-            background: rgba(255, 77, 77, 0.15);
-            border-color: rgba(255, 77, 77, 0.4);
-            color: #ff5252;
-        }
-
-        .leaderboard-btn {
-            right: 10px;
+            background: rgba(255, 77, 77, 0.3);
         }
 
         /* --- Bottom Panel --- */
@@ -364,7 +352,6 @@
             line-height: 1;
         }
 
-        /* Конкретная цена */
         .card-cost {
             font-size: 11px;
             font-weight: 800;
@@ -377,7 +364,6 @@
             color: var(--accent-green);
         }
 
-        /* Прогресс-бар на карточке */
         .card-progress {
             position: absolute;
             bottom: 0;
@@ -435,6 +421,7 @@
             gap: 2px;
             font-weight: 600;
             cursor: pointer;
+            transition: color 0.15s;
         }
 
         .nav-item.active {
@@ -472,6 +459,15 @@
             0% { opacity: 1; transform: translateY(0) scale(0.8); }
             30% { opacity: 1; transform: translateY(-25px) scale(1.3); }
             100% { opacity: 0; transform: translateY(-80px) scale(1); }
+        }
+
+        /* --- Flying ice --- */
+        .flying-ice {
+            position: fixed;
+            font-size: 22px;
+            pointer-events: none;
+            z-index: 200;
+            will-change: transform, opacity;
         }
 
         /* --- Модалки --- */
@@ -687,23 +683,11 @@
     <div class="app-layer">
         
         <div class="score-section">
-            <div class="top-btn leaderboard-btn" id="leaderboard-btn" title="Лидерборд">🏆</div>
-            <div class="top-btn reset-btn" id="reset-btn" title="Сброс">↺</div>
+            <div class="top-btn" id="reset-btn" title="Сброс">↺</div>
             <div class="subtitle">ВАШ ЛЁД</div>
             <div class="balance" id="balance-wrapper">
                 <span id="balance">0</span>
-                <span class="ice-icon">
-                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                        <polygon points="16,2 28,10 28,22 16,30 4,22 4,10" fill="#4fc3f7" stroke="#b3e5fc" stroke-width="1.5" stroke-linejoin="round"/>
-                        <polygon points="16,2 28,10 16,14" fill="#e1f5fe" opacity="0.9"/>
-                        <polygon points="16,2 4,10 16,14" fill="#b3e5fc" opacity="0.9"/>
-                        <polygon points="16,30 28,22 16,18" fill="#0288d1" opacity="0.7"/>
-                        <polygon points="16,30 4,22 16,18" fill="#0277bd" opacity="0.7"/>
-                        <polygon points="16,14 16,18 28,22 28,10" fill="#29b6f6" opacity="0.6"/>
-                        <polygon points="16,14 16,18 4,22 4,10" fill="#4fc3f7" opacity="0.6"/>
-                        <line x1="16" y1="2" x2="16" y2="30" stroke="#ffffff" stroke-width="0.8" opacity="0.7"/>
-                    </svg>
-                </span>
+                <span class="ice-icon">🧊</span>
             </div>
             <div class="income-info">
                 <span id="income-per-sec">+ 0/сек</span>
@@ -728,7 +712,7 @@
                     </span>
                     <span>Лёд</span>
                 </div>
-                <div class="nav-item">
+                <div class="nav-item" id="nav-rating">
                     <span class="nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
@@ -792,9 +776,7 @@
         // ==================================================
         // ⚙️ НАСТРОЙКИ ЛИДЕРБОРДА
         // ==================================================
-        // Замени на свой URL из Google Apps Script / Supabase
-        // Если оставить пустым — лидерборд покажет только твой результат
-        const LEADERBOARD_API = 'https://script.google.com/macros/s/AKfycbwYREu-XyJGeQkADamEVy-RnY1SrcdsTw66qVZ8kxakoamdQQrm0pdqwNeR8S5JZj3f/exec'; // Например: 'https://script.google.com/macros/s/XXX/exec'
+        const LEADERBOARD_API = 'https://script.google.com/macros/s/AKfycbwYREu-XyJGeQkADamEVy-RnY1SrcdsTw66qVZ8kxakoamdQQrm0pdqwNeR8S5JZj3f/exec';
         
         // ==================================================
 
@@ -808,7 +790,6 @@
             tg.setHeaderColor('#03060f');
             tg.setBackgroundColor('#03060f');
             
-            // Получаем данные пользователя
             if (tg.initDataUnsafe?.user) {
                 TG_USER = tg.initDataUnsafe.user;
             }
@@ -849,8 +830,8 @@
 
         // === СОСТОЯНИЕ ИГРЫ ===
         const SAVE_KEY = 'ice_crystal_clicker_save_v2';
-        const OFFLINE_MAX_HOURS = 4; // максимум оффлайн-дохода
-        const OFFLINE_RATE = 0.5;    // 50% от пассивного дохода
+        const OFFLINE_MAX_HOURS = 4;
+        const OFFLINE_RATE = 0.5;
         
         let state = {
             balance: 0,
@@ -927,6 +908,7 @@
         const crystalWrapper = document.getElementById('crystal-wrapper');
         const crystal = document.getElementById('crystal');
         const cardsGrid = document.getElementById('cards-grid');
+        const navRating = document.getElementById('nav-rating');
 
         function updateUI() {
             balanceEl.textContent = formatNumber(state.balance);
@@ -942,8 +924,6 @@
                 const cost = getCost(u);
                 const canAfford = state.balance >= cost;
                 const totalEffect = u.effect * level;
-                
-                // Прогресс: сколько накоплено от цены (0-100%)
                 const progress = Math.min(100, (state.balance / cost) * 100);
                 
                 let effectLabel;
@@ -1075,7 +1055,6 @@
             const diffMs = now - state.lastSeen;
             const diffSec = Math.floor(diffMs / 1000);
             
-            // Минимум 60 секунд оффлайна
             if (diffSec < 60) return null;
             if (state.autoIncome <= 0) return null;
             
@@ -1089,7 +1068,7 @@
         }
 
         function showOfflineModal(data) {
-            document.getElementById('offline-amount').textContent = '+' + formatNumber(data.earned) + ' 💎';
+            document.getElementById('offline-amount').textContent = '+' + formatNumber(data.earned) + ' 🧊';
             
             let timeText;
             if (data.seconds >= OFFLINE_MAX_HOURS * 3600) {
@@ -1115,9 +1094,11 @@
         // ==================================================
         window.closeLeaderboard = function() {
             document.getElementById('lb-modal').classList.remove('show');
+            navRating.classList.remove('active');
         };
 
-        document.getElementById('leaderboard-btn').addEventListener('click', async () => {
+        navRating.addEventListener('click', async () => {
+            navRating.classList.add('active');
             document.getElementById('lb-modal').classList.add('show');
             await loadLeaderboard();
         });
@@ -1126,41 +1107,31 @@
             const lbList = document.getElementById('lb-list');
             lbList.innerHTML = '<div class="modal-text">Загрузка...</div>';
             
-            const myId = TG_USER?.id || 'local';
-            const myName = TG_USER ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' : 'Вы (локально)';
+            const myId = TG_USER?.id || 'local_' + (localStorage.getItem('lb_uid') || (() => {
+                const uid = 'anon_' + Math.random().toString(36).slice(2, 10);
+                localStorage.setItem('lb_uid', uid);
+                return uid;
+            })());
             
-            // Если API не настроен — показываем только себя
-            if (!LEADERBOARD_API) {
-                lbList.innerHTML = `
-                    <div class="modal-text" style="font-size:12px; margin-bottom:8px;">
-                        API не настроен. Настройте LEADERBOARD_API, чтобы видеть других игроков.
-                    </div>
-                    <div class="lb-row me">
-                        <div class="lb-rank top1">1</div>
-                        <div class="lb-name">${myName}</div>
-                        <div class="lb-score">${formatNumber(state.balance)}</div>
-                    </div>
-                `;
-                return;
-            }
+            const myName = TG_USER 
+                ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' 
+                : 'Вы';
             
-            // Отправляем свой score
             try {
                 await fetch(LEADERBOARD_API, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({
                         user_id: myId,
                         name: myName,
                         username: TG_USER?.username || '',
                         photo: TG_USER?.photo_url || '',
                         score: Math.floor(state.balance),
-                        initData: tg.initData || '' // для проверки на сервере
+                        initData: tg.initData || ''
                     })
                 });
             } catch (e) { console.warn('Score upload failed', e); }
             
-            // Загружаем топ
             try {
                 const res = await fetch(`${LEADERBOARD_API}?limit=100`);
                 const data = await res.json();
@@ -1183,7 +1154,7 @@
                     `;
                 }).join('');
             } catch (e) {
-                lbList.innerHTML = '<div class="modal-text">Ошибка загрузки</div>';
+                lbList.innerHTML = '<div class="modal-text">Ошибка загрузки. Проверь соединение.</div>';
                 console.warn('Leaderboard load failed', e);
             }
         }
@@ -1212,7 +1183,6 @@
         loadState();
         recalcIncome();
         
-        // Проверяем оффлайн-доход до отображения UI
         const offlineData = calculateOffline();
         
         document.querySelectorAll('.main-tab').forEach(t => {
@@ -1222,12 +1192,10 @@
         updateUI();
         renderCards();
         
-        // Показать модалку оффлайн-дохода если есть
         if (offlineData) {
             setTimeout(() => showOfflineModal(offlineData), 400);
         }
         
-        // Сохраняем при выходе
         window.addEventListener('beforeunload', saveState);
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) saveState();
