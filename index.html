@@ -9,12 +9,6 @@
         :root {
             --bg-deep: #03060f;
             --bg-mid: #0a1530;
-            --bg-glow: #1a3a5c;
-            --crystal-1: #ffffff;
-            --crystal-2: #b3e5fc;
-            --crystal-3: #4fc3f7;
-            --crystal-4: #0288d1;
-            --crystal-5: #01579b;
             --crystal-glow: rgba(79, 195, 247, 0.9);
             --accent-green: #00e676;
             --accent-blue: #40c4ff;
@@ -49,7 +43,7 @@
             padding-bottom: var(--safe-bottom);
         }
 
-        /* --- Background stars --- */
+        /* --- Звёзды на фоне --- */
         .stars-bg {
             position: fixed;
             inset: 0;
@@ -65,6 +59,7 @@
             opacity: 0.5;
             z-index: 0;
             animation: twinkle 4s ease-in-out infinite;
+            pointer-events: none;
         }
 
         @keyframes twinkle {
@@ -97,10 +92,9 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            color: var(--crystal-1);
+            color: #ffffff;
             text-shadow: 0 0 20px var(--crystal-glow), 0 0 40px rgba(64, 196, 255, 0.6);
             font-variant-numeric: tabular-nums;
-            position: relative;
             transition: transform 0.15s;
         }
 
@@ -145,7 +139,7 @@
             z-index: 5;
         }
 
-        /* --- Crystal Container --- */
+        /* --- Crystal Stage --- */
         .crystal-stage {
             position: relative;
             width: 100%;
@@ -156,32 +150,16 @@
             z-index: 2;
         }
 
-        /* Парящий кристалл */
+        /* Кристалл — СТАТИЧНЫЙ, без анимации парения */
         .crystal {
             position: relative;
             width: 220px;
             height: 280px;
-            animation: crystalFloat 4s ease-in-out infinite;
             will-change: transform;
             transform-style: preserve-3d;
         }
 
-        @keyframes crystalFloat {
-            0%, 100% { 
-                transform: translateY(0) rotate(0deg) scale(1); 
-            }
-            25% { 
-                transform: translateY(-15px) rotate(2deg) scale(1.02); 
-            }
-            50% { 
-                transform: translateY(-5px) rotate(-2deg) scale(1); 
-            }
-            75% { 
-                transform: translateY(-18px) rotate(1deg) scale(1.03); 
-            }
-        }
-
-        /* Внутреннее свечение кристалла */
+        /* Внутреннее свечение (мягко пульсирует) */
         .crystal::before {
             content: '';
             position: absolute;
@@ -198,12 +176,12 @@
 
         @keyframes innerGlow {
             0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
 
-        /* Пульс при клике */
+        /* Пульс при клике (сжатие) */
         .crystal.clicked {
-            animation: crystalClick 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: crystalClick 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes crystalClick {
@@ -264,9 +242,6 @@
         /* --- Вспышка при клике --- */
         .flash {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             width: 100px;
             height: 100px;
             border-radius: 50%;
@@ -482,11 +457,10 @@
                 <div class="shard"></div>
             </div>
             
-            <!-- Кристалл -->
+            <!-- Кристалл (СТАТИЧНЫЙ) -->
             <div class="crystal" id="crystal">
                 <svg class="crystal-svg" viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <!-- Главный градиент кристалла -->
                         <linearGradient id="crystalFace1" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#ffffff"/>
                             <stop offset="30%" stop-color="#e1f5fe"/>
@@ -494,72 +468,64 @@
                             <stop offset="100%" stop-color="#29b6f6"/>
                         </linearGradient>
                         
-                        <!-- Темная грань (правая) -->
                         <linearGradient id="crystalFace2" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#4fc3f7"/>
                             <stop offset="100%" stop-color="#0288d1"/>
                         </linearGradient>
                         
-                        <!-- Еще темнее (правая нижняя) -->
                         <linearGradient id="crystalFace3" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#0288d1"/>
                             <stop offset="100%" stop-color="#01579b"/>
                         </linearGradient>
                         
-                        <!-- Левая грань -->
                         <linearGradient id="crystalFace4" x1="100%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stop-color="#b3e5fc"/>
                             <stop offset="100%" stop-color="#4fc3f7"/>
                         </linearGradient>
                         
-                        <!-- Блик -->
                         <radialGradient id="crystalShine" cx="30%" cy="20%" r="50%">
                             <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
                             <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
                         </radialGradient>
                     </defs>
                     
-                    <!-- ОСНОВАНИЕ (нижний пирамидальный наконечник) -->
+                    <!-- ОСНОВАНИЕ -->
                     <polygon points="110,270 50,200 110,170 170,200" fill="url(#crystalFace3)"/>
                     <polygon points="110,270 50,200 80,195 110,220" fill="url(#crystalFace2)" opacity="0.8"/>
                     <polygon points="110,270 170,200 140,195 110,220" fill="url(#crystalFace3)" opacity="0.9"/>
                     
-                    <!-- ЛЕВАЯ ГРАНЬ (светлая) -->
+                    <!-- ЛЕВАЯ ГРАНЬ -->
                     <polygon points="50,200 30,100 110,40 110,170" fill="url(#crystalFace4)"/>
                     
-                    <!-- ЦЕНТРАЛЬНАЯ ГРАНЬ (основная, светлая) -->
+                    <!-- ЦЕНТРАЛЬНАЯ ГРАНЬ -->
                     <polygon points="110,40 110,170 50,200 30,100" fill="url(#crystalFace1)" opacity="0.5"/>
                     
                     <!-- ПРАВАЯ ГРАНЬ -->
                     <polygon points="110,40 190,100 170,200 110,170" fill="url(#crystalFace2)"/>
                     
-                    <!-- ВЕРХНЯЯ ГРАНЬ (верхушка) -->
+                    <!-- ВЕРХНЯЯ ГРАНЬ -->
                     <polygon points="110,40 190,100 110,120 30,100" fill="url(#crystalFace1)"/>
-                    
-                    <!-- ВЕРХНЯЯ ГРАНЬ - темная часть -->
                     <polygon points="110,40 190,100 110,120" fill="url(#crystalFace2)" opacity="0.6"/>
                     
-                    <!-- БОКОВЫЕ РЕБРА (блики по краям) -->
+                    <!-- БОКОВЫЕ РЕБРА -->
                     <line x1="110" y1="40" x2="110" y2="170" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
                     <line x1="110" y1="170" x2="110" y2="270" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
                     
-                    <!-- БОЛЬШОЙ БЛИК -->
+                    <!-- БЛИКИ -->
                     <polygon points="60,120 100,70 130,90 80,150" fill="url(#crystalShine)" opacity="0.7"/>
-                    
-                    <!-- МАЛЕНЬКИЙ БЛИК -->
                     <polygon points="130,110 155,90 165,105 140,125" fill="#ffffff" opacity="0.4"/>
                     
-                    <!-- ВНУТРЕННИЕ ГРАНИ (создают глубину) -->
+                    <!-- ВНУТРЕННИЕ ГРАНИ -->
                     <polygon points="80,100 110,80 130,140 90,170" fill="#ffffff" opacity="0.15"/>
                     <polygon points="130,140 160,120 170,180 140,200" fill="#01579b" opacity="0.2"/>
                     
-                    <!-- ТОНКИЕ ЛИНИИ РЕБЕР -->
+                    <!-- РЕБРА -->
                     <line x1="110" y1="40" x2="30" y2="100" stroke="#b3e5fc" stroke-width="1" opacity="0.7"/>
                     <line x1="110" y1="40" x2="190" y2="100" stroke="#0288d1" stroke-width="1" opacity="0.7"/>
                     <line x1="30" y1="100" x2="50" y2="200" stroke="#81d4fa" stroke-width="1" opacity="0.6"/>
                     <line x1="190" y1="100" x2="170" y2="200" stroke="#01579b" stroke-width="1" opacity="0.6"/>
                     
-                    <!-- ВНУТРЕННЕЕ ЯДРО (свет изнутри) -->
+                    <!-- ВНУТРЕННЕЕ ЯДРО -->
                     <ellipse cx="110" cy="120" rx="30" ry="50" fill="#ffffff" opacity="0.15"/>
                 </svg>
             </div>
@@ -665,7 +631,7 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Particle system
+        // Particles
         const particles = [];
         const MAX_PARTICLES = 120;
 
@@ -753,7 +719,6 @@
             balance += incomePerClick;
             updateUI();
 
-            // Эффекты
             spawnParticles(x, y, 10);
             createFloatingText(incomePerClick, x, y);
             createFlyingShard(e.clientX, e.clientY);
@@ -776,7 +741,6 @@
             balanceWrapper.classList.add('pulse');
         }
 
-        // Вспышка
         function createFlash(x, y) {
             const flash = document.createElement('div');
             flash.className = 'flash';
