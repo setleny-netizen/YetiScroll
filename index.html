@@ -8,7 +8,6 @@
     <style>
         :root {
             --bg-deep: #03060f;
-            --bg-mid: #0a1530;
             --accent-green: #00e676;
             --accent-blue: #40c4ff;
             --text-main: #ffffff;
@@ -49,7 +48,6 @@
             overflow: hidden;
         }
 
-        /* Звёзды */
         .stars-bg {
             position: absolute;
             inset: 0;
@@ -71,10 +69,10 @@
             50% { opacity: 0.7; }
         }
 
-        /* Контейнер кристалла — ОПУЩЕН НИЖЕ (было 38%) */
+        /* Кристалл — поднят между 38% и 48% → 43% */
         .crystal-wrapper {
             position: absolute;
-            top: 48%;
+            top: 43%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 220px;
@@ -91,7 +89,6 @@
             );
         }
 
-        /* Орбиты с осколками */
         .orbit {
             position: absolute;
             top: 50%;
@@ -130,7 +127,6 @@
         .shard:nth-child(5) { top: 15%; left: 15%; }
         .shard:nth-child(6) { bottom: 15%; right: 15%; }
 
-        /* Кристалл */
         .crystal {
             width: 100%;
             height: 100%;
@@ -143,7 +139,7 @@
 
         @keyframes crystalClick {
             0% { transform: scale(1); }
-            40% { transform: scale(0.9); }
+            40% { transform: scale(0.92); }
             100% { transform: scale(1); }
         }
 
@@ -151,11 +147,10 @@
             width: 100%;
             height: 100%;
             overflow: visible;
-            /* УБРАНО: drop-shadow */
         }
 
         /* ============================================
-           ВЕРХНИЙ СЛОЙ: UI
+           UI СЛОЙ
            ============================================ */
         .app-layer {
             position: relative;
@@ -172,15 +167,6 @@
         .score-section,
         .bottom-panel {
             pointer-events: auto;
-        }
-
-        #particles-canvas {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 5;
         }
 
         /* --- Score Section --- */
@@ -210,7 +196,6 @@
             color: #ffffff;
             font-variant-numeric: tabular-nums;
             transition: transform 0.15s;
-            /* УБРАНО: text-shadow */
         }
 
         .balance.pulse {
@@ -223,7 +208,6 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            /* УБРАНО: filter: drop-shadow */
         }
 
         .ice-icon svg {
@@ -248,6 +232,33 @@
             min-height: 0;
         }
 
+        /* Кнопка сброса */
+        .reset-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 77, 77, 0.15);
+            border: 1px solid rgba(255, 77, 77, 0.4);
+            color: #ff5252;
+            font-size: 14px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 100;
+            transition: transform 0.1s, background 0.15s;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 77, 77, 0.3);
+        }
+
         /* --- Bottom Panel --- */
         .bottom-panel {
             background: var(--panel-bg);
@@ -255,49 +266,39 @@
             -webkit-backdrop-filter: blur(20px);
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
-            padding: 15px;
-            padding-bottom: 10px;
+            padding: 12px 15px 10px 15px;
             border-top: 1px solid rgba(79, 195, 247, 0.15);
             flex-shrink: 0;
         }
 
-        .tabs {
+        /* Табы "Добыча" / "Кирка" */
+        .main-tabs {
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 14px;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.1);
+            padding-bottom: 8px;
+        }
+
+        .main-tab {
             color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .tab {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-weight: 700;
+            font-size: 15px;
             cursor: pointer;
-        }
-
-        .tab .tab-icon {
-            width: 16px;
-            height: 16px;
-            display: inline-flex;
-        }
-
-        .tab .tab-icon svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .tab.active {
-            color: var(--accent-blue);
+            padding: 4px 8px;
             position: relative;
+            transition: color 0.15s;
         }
-        
-        .tab.active::after {
+
+        .main-tab.active {
+            color: var(--accent-blue);
+        }
+
+        .main-tab.active::after {
             content: '';
             position: absolute;
-            bottom: -4px;
+            bottom: -9px;
             left: 0;
             width: 100%;
             height: 2px;
@@ -305,6 +306,7 @@
             border-radius: 2px;
         }
 
+        /* Сетка карточек */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -316,27 +318,36 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(79, 195, 247, 0.15);
             border-radius: 14px;
-            padding: 8px 4px;
+            padding: 8px 4px 6px 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            aspect-ratio: 1/1;
+            justify-content: space-between;
+            aspect-ratio: 1/1.15;
             cursor: pointer;
-            transition: transform 0.1s, background 0.1s;
+            transition: transform 0.1s, background 0.15s, opacity 0.15s;
             position: relative;
             overflow: hidden;
+            text-align: center;
         }
 
         .card:active {
-            transform: scale(0.92);
-            background: rgba(79, 195, 247, 0.25);
+            transform: scale(0.95);
+            background: rgba(79, 195, 247, 0.2);
+        }
+
+        .card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card.locked:active {
+            transform: none;
         }
 
         .card-icon {
             width: 26px;
             height: 26px;
-            margin-bottom: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -348,19 +359,49 @@
             display: block;
         }
 
-        .card-label {
+        .card-title {
             font-size: 9px;
-            text-align: center;
             color: #fff;
+            font-weight: 700;
             line-height: 1.1;
-            font-weight: 600;
         }
 
-        .card.orange { background: linear-gradient(135deg, rgba(209, 125, 42, 0.4), rgba(168, 93, 30, 0.6)); }
-        .card.green { background: linear-gradient(135deg, rgba(42, 138, 93, 0.4), rgba(30, 92, 65, 0.6)); }
-        .card.purple { background: linear-gradient(135deg, rgba(138, 42, 138, 0.4), rgba(92, 30, 92, 0.6)); }
-        .card.blue { background: linear-gradient(135deg, rgba(42, 106, 209, 0.4), rgba(30, 76, 138, 0.6)); }
+        .card-effect {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--accent-green);
+            line-height: 1;
+        }
 
+        .card-cost {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            line-height: 1;
+        }
+
+        .card-cost.affordable {
+            color: var(--accent-blue);
+        }
+
+        .card-level {
+            position: absolute;
+            top: 4px;
+            right: 5px;
+            font-size: 8px;
+            font-weight: 800;
+            color: var(--accent-blue);
+            background: rgba(64, 196, 255, 0.15);
+            padding: 1px 5px;
+            border-radius: 6px;
+        }
+
+        .card.orange { background: linear-gradient(135deg, rgba(209, 125, 42, 0.35), rgba(168, 93, 30, 0.55)); border-color: rgba(255, 183, 77, 0.3); }
+        .card.green { background: linear-gradient(135deg, rgba(42, 138, 93, 0.35), rgba(30, 92, 65, 0.55)); border-color: rgba(129, 199, 132, 0.3); }
+        .card.purple { background: linear-gradient(135deg, rgba(138, 42, 138, 0.35), rgba(92, 30, 92, 0.55)); border-color: rgba(206, 147, 216, 0.3); }
+        .card.blue { background: linear-gradient(135deg, rgba(42, 106, 209, 0.35), rgba(30, 76, 138, 0.55)); border-color: rgba(100, 181, 246, 0.3); }
+
+        /* Панель навигации снизу */
         .nav-bar {
             display: flex;
             justify-content: space-between;
@@ -399,23 +440,6 @@
             display: block;
         }
 
-        /* --- Вспышка --- */
-        .flash {
-            position: fixed;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(79,195,247,0.5) 30%, transparent 70%);
-            pointer-events: none;
-            z-index: 50;
-            animation: flashOut 0.5s ease-out forwards;
-        }
-
-        @keyframes flashOut {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(3); }
-        }
-
         /* --- Floating text --- */
         .float-text {
             position: fixed;
@@ -427,29 +451,12 @@
             font-size: 22px;
             font-variant-numeric: tabular-nums;
             will-change: transform, opacity;
-            /* УБРАНО: text-shadow */
         }
 
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(0.8); }
             30% { opacity: 1; transform: translateY(-25px) scale(1.3); }
             100% { opacity: 0; transform: translateY(-80px) scale(1); }
-        }
-
-        /* --- Flying shard --- */
-        .flying-ice {
-            position: fixed;
-            width: 24px;
-            height: 24px;
-            pointer-events: none;
-            z-index: 200;
-            will-change: transform, opacity;
-        }
-
-        .flying-ice svg {
-            width: 100%;
-            height: 100%;
-            display: block;
         }
     </style>
 </head>
@@ -529,17 +536,15 @@
         </div>
     </div>
 
-    <canvas id="particles-canvas"></canvas>
-
-    <!-- ВЕРХНИЙ СЛОЙ: UI -->
+    <!-- UI СЛОЙ -->
     <div class="app-layer">
         
         <div class="score-section">
+            <div class="reset-btn" id="reset-btn" title="Сброс">↺</div>
             <div class="subtitle">ВАШ ЛЁД</div>
             <div class="balance" id="balance-wrapper">
                 <span id="balance">0</span>
                 <span class="ice-icon">
-                    <!-- SVG иконка льда -->
                     <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="16,2 28,10 28,22 16,30 4,22 4,10" fill="#4fc3f7" stroke="#b3e5fc" stroke-width="1.5" stroke-linejoin="round"/>
                         <polygon points="16,2 28,10 16,14" fill="#e1f5fe" opacity="0.9"/>
@@ -554,88 +559,22 @@
             </div>
             <div class="income-info">
                 <span id="income-per-sec">+ 0/сек</span>
-                <span id="income-per-click" class="income-per-click">+ 0/удар</span>
+                <span id="income-per-click" class="income-per-click">+ 1/удар</span>
             </div>
         </div>
 
         <div class="empty-zone"></div>
 
         <div class="bottom-panel">
-            <div class="tabs">
-                <div class="tab active">
-                    <span class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="3" y1="12" x2="21" y2="12"/>
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <line x1="3" y1="18" x2="21" y2="18"/>
-                        </svg>
-                    </span>
-                    Меню
-                </div>
-                <div class="tab">
-                    <span class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                    </span>
-                    Улучшения
-                </div>
-                <div class="tab">
-                    <span class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                        </svg>
-                    </span>
-                    Бонусы
-                </div>
-                <div class="tab">
-                    <span class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <line x1="9" y1="3" x2="9" y2="21"/>
-                        </svg>
-                    </span>
-                    Инвентарь
-                </div>
+            <!-- Два основных таба -->
+            <div class="main-tabs">
+                <div class="main-tab active" data-tab="mining">Добыча</div>
+                <div class="main-tab" data-tab="pickaxe">Кирка</div>
             </div>
 
-            <div class="cards-grid">
-                <div class="card orange" onclick="buyUpgrade(1)">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 24 24" fill="#ffd54f" xmlns="http://www.w3.org/2000/svg">
-                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-                        </svg>
-                    </div>
-                    <div class="card-label">Рейтинг</div>
-                </div>
-                <div class="card green" onclick="buyUpgrade(2)">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#81c784" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="1" x2="12" y2="23"/>
-                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                        </svg>
-                    </div>
-                    <div class="card-label">Перевести</div>
-                </div>
-                <div class="card purple" onclick="buyUpgrade(3)">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#ce93d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                    </div>
-                    <div class="card-label">История</div>
-                </div>
-                <div class="card blue" onclick="buyUpgrade(4)">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#64b5f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <path d="M16 10a4 4 0 0 1-8 0"/>
-                        </svg>
-                    </div>
-                    <div class="card-label">Магазин</div>
-                </div>
+            <!-- Сетка карточек -->
+            <div class="cards-grid" id="cards-grid">
+                <!-- Заполняется через JS -->
             </div>
 
             <div class="nav-bar">
@@ -690,6 +629,7 @@
     </div>
 
     <script>
+        // === TELEGRAM ===
         let tg = window.Telegram?.WebApp;
         if (tg) {
             tg.ready();
@@ -700,134 +640,221 @@
             tg = {
                 close: () => {},
                 HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} },
-                showAlert: (msg) => alert(msg)
+                showAlert: (msg) => alert(msg),
+                showConfirm: (msg, cb) => { if (confirm(msg)) cb(); }
             };
         }
 
-        let balance = 0;
-        let incomePerSecond = 0;
-        let incomePerClick = 1;
-        let upgradeCost = 50;
+        // === ДАННЫЕ АПГРЕЙДОВ ===
+        // Автономная добыча (таб "Добыча")
+        const MINING_UPGRADES = [
+            { id: 'auto1', name: 'Кристалл', baseCost: 25, costMult: 1.15, effect: 1, icon: 'cyan',    color: 'orange' },
+            { id: 'auto2', name: 'Ледник',   baseCost: 250, costMult: 1.15, effect: 8, icon: 'blue',    color: 'green' },
+            { id: 'auto3', name: 'Айсберг',  baseCost: 2500, costMult: 1.15, effect: 45, icon: 'purple', color: 'purple' },
+            { id: 'auto4', name: 'Глетчер',  baseCost: 25000, costMult: 1.15, effect: 260, icon: 'deep',  color: 'blue' },
+        ];
 
-        const balanceEl = document.getElementById('balance');
-        const balanceWrapper = document.getElementById('balance-wrapper');
-        const incomeSecEl = document.getElementById('income-per-sec');
-        const incomeClickEl = document.getElementById('income-per-click');
-        const crystalWrapper = document.getElementById('crystal-wrapper');
-        const crystal = document.getElementById('crystal');
-        const canvas = document.getElementById('particles-canvas');
-        const ctx = canvas.getContext('2d');
+        // Улучшения за клик (таб "Кирка")
+        const CLICK_UPGRADES = [
+            { id: 'click1', name: 'Рука',   baseCost: 15,  costMult: 1.4, effect: 1, icon: 'hand',  color: 'orange' },
+            { id: 'click2', name: 'Кирка',  baseCost: 150, costMult: 1.4, effect: 5, icon: 'pick',  color: 'green' },
+            { id: 'click3', name: 'Дрель',  baseCost: 1500, costMult: 1.4, effect: 25, icon: 'drill', color: 'purple' },
+            { id: 'click4', name: 'Лазер',  baseCost: 15000, costMult: 1.4, effect: 120, icon: 'laser', color: 'blue' },
+        ];
 
-        let canvasW = 0, canvasH = 0;
-        function resizeCanvas() {
-            const dpr = window.devicePixelRatio || 1;
-            canvasW = window.innerWidth;
-            canvasH = window.innerHeight;
-            canvas.width = canvasW * dpr;
-            canvas.height = canvasH * dpr;
-            canvas.style.width = canvasW + 'px';
-            canvas.style.height = canvasH + 'px';
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // SVG иконки
+        const ICONS = {
+            // Иконки авто-добычи
+            cyan: `<svg viewBox="0 0 24 24" fill="#4fc3f7"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/></svg>`,
+            blue: `<svg viewBox="0 0 24 24" fill="#29b6f6"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/><polygon points="12,2 20,7 12,10" fill="#b3e5fc"/></svg>`,
+            purple: `<svg viewBox="0 0 24 24" fill="#ba68c8"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/><polygon points="12,2 20,7 12,10" fill="#e1bee7"/></svg>`,
+            deep: `<svg viewBox="0 0 24 24" fill="#0277bd"><polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/><polygon points="12,2 20,7 12,10" fill="#4fc3f7"/></svg>`,
+            // Иконки улучшений клика
+            hand: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffd54f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v10"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>`,
+            pick: `<svg viewBox="0 0 24 24" fill="none" stroke="#81c784" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`,
+            drill: `<svg viewBox="0 0 24 24" fill="none" stroke="#ce93d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M8 6l4-3 4 3"/><path d="M8 18l4 3 4-3"/><circle cx="12" cy="12" r="3"/></svg>`,
+            laser: `<svg viewBox="0 0 24 24" fill="none" stroke="#64b5f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>`,
+        };
+
+        // === СОСТОЯНИЕ ИГРЫ ===
+        const SAVE_KEY = 'ice_crystal_clicker_save_v1';
+        
+        let state = {
+            balance: 0,
+            clickLevel: 0,   // доход за клик = 1 + сумма улучшений клика
+            clickIncome: 1,  // базовый 1 + докупки
+            autoIncome: 0,
+            activeTab: 'mining',
+            upgrades: {}     // id -> уровень
+        };
+
+        // Инициализация уровней
+        [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => {
+            state.upgrades[u.id] = state.upgrades[u.id] || 0;
+        });
+
+        // Загрузка
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(SAVE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                    // гарантия что все ключи апгрейдов есть
+                    [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => {
+                        if (state.upgrades[u.id] === undefined) state.upgrades[u.id] = 0;
+                    });
+                }
+            } catch (e) { console.warn('Load error', e); }
         }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
 
-        // === ЧАСТИЦЫ (убраны тени) ===
-        const particles = [];
-        const MAX_PARTICLES = 120;
-
-        function spawnParticles(x, y, count) {
-            for (let i = 0; i < count; i++) {
-                if (particles.length >= MAX_PARTICLES) break;
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 7 + 3;
-                particles.push({
-                    x, y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed - 3,
-                    size: Math.random() * 6 + 3,
-                    rotation: Math.random() * Math.PI * 2,
-                    rotSpeed: (Math.random() - 0.5) * 0.4,
-                    life: 1.0,
-                    decay: 0.018 + Math.random() * 0.015,
-                    color: Math.random() > 0.5 ? '#ffffff' : '#4fc3f7'
-                });
-            }
+        // Сохранение
+        function saveState() {
+            try {
+                localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+            } catch (e) { console.warn('Save error', e); }
         }
 
-        let lastTime = 0;
-        function animateParticles(time) {
-            const dt = Math.min((time - lastTime) / 16.67, 2);
-            lastTime = time;
-            ctx.clearRect(0, 0, canvasW, canvasH);
-            
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.x += p.vx * dt;
-                p.y += p.vy * dt;
-                p.vy += 0.4 * dt;
-                p.vx *= 0.97;
-                p.rotation += p.rotSpeed * dt;
-                p.life -= p.decay * dt;
-                
-                if (p.life <= 0) { particles.splice(i, 1); continue; }
-                
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rotation);
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                // УБРАНО: ctx.shadowColor и ctx.shadowBlur
-                ctx.beginPath();
-                ctx.moveTo(0, -p.size);
-                ctx.lineTo(p.size * 0.5, 0);
-                ctx.lineTo(0, p.size);
-                ctx.lineTo(-p.size * 0.5, 0);
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-            }
-            requestAnimationFrame(animateParticles);
-        }
-        requestAnimationFrame(animateParticles);
-
+        // === ФОРМАТ ЧИСЕЛ ===
         function formatNumber(num) {
+            if (num >= 1e15) return (num / 1e15).toFixed(2) + ' квдрлн';
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + ' трлн';
             if (num >= 1e9) return (num / 1e9).toFixed(2) + ' млрд';
             if (num >= 1e6) return (num / 1e6).toFixed(2) + ' млн';
             if (num >= 1e3) return (num / 1e3).toFixed(2) + ' тыс.';
             return Math.floor(num).toString();
         }
 
-        function updateUI() {
-            balanceEl.textContent = formatNumber(balance);
-            incomeSecEl.textContent = `+ ${formatNumber(incomePerSecond)}/сек`;
-            incomeClickEl.textContent = `+ ${formatNumber(incomePerClick)}/удар`;
+        // === СТОИМОСТЬ АПГРЕЙДА ===
+        function getCost(upgrade) {
+            const level = state.upgrades[upgrade.id] || 0;
+            return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMult, level));
         }
 
-        setInterval(() => {
-            if (incomePerSecond > 0) {
-                balance += incomePerSecond;
-                updateUI();
-            }
-        }, 1000);
+        // === ПЕРЕСЧЁТ ДОХОДА ===
+        function recalcIncome() {
+            let clickBonus = 0;
+            let autoBonus = 0;
+            
+            CLICK_UPGRADES.forEach(u => {
+                const lvl = state.upgrades[u.id] || 0;
+                clickBonus += u.effect * lvl;
+            });
+            
+            MINING_UPGRADES.forEach(u => {
+                const lvl = state.upgrades[u.id] || 0;
+                autoBonus += u.effect * lvl;
+            });
+            
+            state.clickIncome = 1 + clickBonus;
+            state.autoIncome = autoBonus;
+        }
 
-        // === КЛИК ТОЛЬКО ПО КРИСТАЛЛУ ===
+        // === ОБНОВЛЕНИЕ UI ===
+        const balanceEl = document.getElementById('balance');
+        const balanceWrapper = document.getElementById('balance-wrapper');
+        const incomeSecEl = document.getElementById('income-per-sec');
+        const incomeClickEl = document.getElementById('income-per-click');
+        const crystalWrapper = document.getElementById('crystal-wrapper');
+        const crystal = document.getElementById('crystal');
+        const cardsGrid = document.getElementById('cards-grid');
+
+        function updateUI() {
+            balanceEl.textContent = formatNumber(state.balance);
+            incomeSecEl.textContent = `+ ${formatNumber(state.autoIncome)}/сек`;
+            incomeClickEl.textContent = `+ ${formatNumber(state.clickIncome)}/удар`;
+        }
+
+        // === РЕНДЕР КАРТОЧЕК ===
+        function renderCards() {
+            const list = state.activeTab === 'mining' ? MINING_UPGRADES : CLICK_UPGRADES;
+            
+            cardsGrid.innerHTML = list.map(u => {
+                const level = state.upgrades[u.id] || 0;
+                const cost = getCost(u);
+                const canAfford = state.balance >= cost;
+                const totalEffect = u.effect * level;
+                
+                // Формат эффекта
+                let effectLabel;
+                if (state.activeTab === 'mining') {
+                    effectLabel = `+${formatNumber(totalEffect)}/сек`;
+                } else {
+                    effectLabel = `+${formatNumber(totalEffect)}/удар`;
+                }
+                
+                return `
+                    <div class="card ${u.color} ${canAfford ? '' : 'locked'}" data-id="${u.id}">
+                        ${level > 0 ? `<div class="card-level">Ур.${level}</div>` : ''}
+                        <div class="card-icon">${ICONS[u.icon]}</div>
+                        <div class="card-title">${u.name}</div>
+                        <div class="card-effect">${effectLabel}</div>
+                        <div class="card-cost ${canAfford ? 'affordable' : ''}">${formatNumber(cost)}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Обработчики
+            cardsGrid.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = card.dataset.id;
+                    tryBuyUpgrade(id);
+                });
+            });
+        }
+
+        // === ПОКУПКА АПГРЕЙДА ===
+        function tryBuyUpgrade(id) {
+            const all = [...MINING_UPGRADES, ...CLICK_UPGRADES];
+            const u = all.find(x => x.id === id);
+            if (!u) return;
+            
+            const cost = getCost(u);
+            if (state.balance < cost) {
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                return;
+            }
+            
+            state.balance -= cost;
+            state.upgrades[id] = (state.upgrades[id] || 0) + 1;
+            
+            recalcIncome();
+            updateUI();
+            renderCards();
+            saveState();
+            
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        // === ТАБЫ ===
+        document.querySelectorAll('.main-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                state.activeTab = tab.dataset.tab;
+                renderCards();
+                saveState();
+            });
+        });
+
+        // === КЛИК ПО КРИСТАЛЛУ ===
         crystalWrapper.addEventListener('click', (e) => {
             e.stopPropagation();
             const x = e.clientX;
             const y = e.clientY;
 
-            balance += incomePerClick;
+            state.balance += state.clickIncome;
             updateUI();
+            renderCards(); // обновить доступность карточек
 
-            spawnParticles(x, y, 10);
-            createFloatingText(incomePerClick, x, y);
-            createFlyingShard(x, y);
-            createFlash(x, y);
+            createFloatingText(state.clickIncome, x, y);
             clickCrystal();
             pulseBalance();
             
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            
+            // Сохраняем не каждый клик, а раз в ~10 кликов или через throttle
+            throttledSave();
         });
 
         function clickCrystal() {
@@ -842,16 +869,7 @@
             balanceWrapper.classList.add('pulse');
         }
 
-        function createFlash(x, y) {
-            const flash = document.createElement('div');
-            flash.className = 'flash';
-            flash.style.left = x + 'px';
-            flash.style.top = y + 'px';
-            flash.style.transform = 'translate(-50%, -50%)';
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 500);
-        }
-
+        // === ВСПЛЫВАЮЩИЙ ТЕКСТ ===
         function createFloatingText(amount, x, y) {
             const el = document.createElement('div');
             el.className = 'float-text';
@@ -862,71 +880,53 @@
             setTimeout(() => el.remove(), 900);
         }
 
-        // SVG-иконка для летящего осколка
-        const ICE_SVG = `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="16,2 28,10 28,22 16,30 4,22 4,10" fill="#4fc3f7" stroke="#b3e5fc" stroke-width="1.5" stroke-linejoin="round"/>
-            <polygon points="16,2 28,10 16,14" fill="#e1f5fe" opacity="0.9"/>
-            <polygon points="16,2 4,10 16,14" fill="#b3e5fc" opacity="0.9"/>
-            <polygon points="16,30 28,22 16,18" fill="#0288d1" opacity="0.7"/>
-            <polygon points="16,30 4,22 16,18" fill="#0277bd" opacity="0.7"/>
-        </svg>`;
-
-        function createFlyingShard(startX, startY) {
-            const shard = document.createElement('div');
-            shard.className = 'flying-ice';
-            shard.innerHTML = ICE_SVG;
-            shard.style.left = startX + 'px';
-            shard.style.top = startY + 'px';
-            document.body.appendChild(shard);
-            
-            const target = document.querySelector('.ice-icon');
-            const targetRect = target.getBoundingClientRect();
-            const targetX = targetRect.left + targetRect.width / 2;
-            const targetY = targetRect.top + targetRect.height / 2;
-            
-            const startTime = performance.now();
-            const duration = 650;
-            const deltaX = targetX - startX;
-            const deltaY = targetY - startY;
-            const controlX = startX + deltaX * 0.4;
-            const controlY = Math.min(startY, targetY) - 120;
-            
-            function animate(now) {
-                const t = Math.min((now - startTime) / duration, 1);
-                const mt = 1 - t;
-                const x = mt * mt * startX + 2 * mt * t * controlX + t * t * targetX;
-                const y = mt * mt * startY + 2 * mt * t * controlY + t * t * targetY;
-                const scale = 1 - t * 0.6;
-                const opacity = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
-                const rotate = t * 360;
-                
-                shard.style.transform = `translate(${x - startX}px, ${y - startY}px) scale(${scale}) rotate(${rotate}deg)`;
-                shard.style.opacity = opacity;
-                
-                if (t < 1) requestAnimationFrame(animate);
-                else shard.remove();
-            }
-            requestAnimationFrame(animate);
-        }
-
-        function buyUpgrade(type) {
-            if (balance >= upgradeCost) {
-                balance -= upgradeCost;
-                upgradeCost = Math.floor(upgradeCost * 1.6);
-                
-                if (type === 1) incomePerClick += 2;
-                if (type === 2) incomePerSecond += 5;
-                if (type === 3) incomePerClick += 10;
-                if (type === 4) incomePerSecond += 25;
-                
+        // === АВТО-ДОХОД ===
+        setInterval(() => {
+            if (state.autoIncome > 0) {
+                state.balance += state.autoIncome;
                 updateUI();
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                renderCards();
+                throttledSave();
             }
+        }, 1000);
+
+        // === THROTTLED SAVE ===
+        let saveTimeout = null;
+        function throttledSave() {
+            if (saveTimeout) return;
+            saveTimeout = setTimeout(() => {
+                saveState();
+                saveTimeout = null;
+            }, 2000); // Сохраняем не чаще раза в 2 сек
         }
 
+        // === СБРОС ===
+        document.getElementById('reset-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (tg.showConfirm) {
+                tg.showConfirm('Сбросить весь прогресс?', () => {
+                    localStorage.removeItem(SAVE_KEY);
+                    location.reload();
+                });
+            } else {
+                if (confirm('Сбросить весь прогресс?')) {
+                    localStorage.removeItem(SAVE_KEY);
+                    location.reload();
+                }
+            }
+        });
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        loadState();
+        recalcIncome();
+        
+        // Восстановить активный таб
+        document.querySelectorAll('.main-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === state.activeTab);
+        });
+        
         updateUI();
+        renderCards();
     </script>
 </body>
 </html>
