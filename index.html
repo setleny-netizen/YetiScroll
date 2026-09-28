@@ -9,7 +9,6 @@
         :root {
             --bg-deep: #03060f;
             --bg-mid: #0a1530;
-            --crystal-glow: rgba(79, 195, 247, 0.9);
             --accent-green: #00e676;
             --accent-blue: #40c4ff;
             --text-main: #ffffff;
@@ -40,13 +39,13 @@
         }
 
         /* ============================================
-           ФОНОВЫЙ СЛОЙ: Звёзды + Свечение + Кристалл
+           ФОНОВЫЙ СЛОЙ
            ============================================ */
         .bg-layer {
             position: fixed;
             inset: 0;
             z-index: 1;
-            pointer-events: none; /* Всё по умолчанию не кликается */
+            pointer-events: none;
             overflow: hidden;
         }
 
@@ -72,42 +71,23 @@
             50% { opacity: 0.7; }
         }
 
-        /* Свечение вокруг кристалла — теперь смещено вверх вместе с кристаллом */
-        .crystal-halo {
-            position: absolute;
-            top: 38%; /* Было 50% — подняли выше */
-            left: 50%;
-            width: 500px;
-            height: 500px;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(79, 195, 247, 0.35) 0%, rgba(79, 195, 247, 0.1) 35%, transparent 70%);
-            animation: haloPulse 4s ease-in-out infinite;
-            filter: blur(10px);
-        }
-
-        @keyframes haloPulse {
-            0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-        }
-
-        /* Контейнер кристалла — поднят выше центра экрана */
+        /* Контейнер кристалла — ОПУЩЕН НИЖЕ (было 38%) */
         .crystal-wrapper {
             position: absolute;
-            top: 38%; /* Было 50% — теперь кристалл выше */
+            top: 48%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 220px;
             height: 280px;
-            pointer-events: auto; /* ВКЛЮЧАЕМ клики только здесь */
+            pointer-events: auto;
             cursor: pointer;
-            /* Ограничиваем зону клика формой кристалла (ромбовидная) */
             clip-path: polygon(
-                50% 0%,      /* вершина */
-                95% 35%,     /* правая верхняя */
-                88% 75%,     /* правая нижняя */
-                50% 100%,    /* основание */
-                12% 75%,     /* левая нижняя */
-                5% 35%       /* левая верхняя */
+                50% 0%,
+                95% 35%,
+                88% 75%,
+                50% 100%,
+                12% 75%,
+                5% 35%
             );
         }
 
@@ -140,7 +120,6 @@
             height: 8px;
             background: linear-gradient(135deg, #ffffff, #4fc3f7);
             clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-            filter: drop-shadow(0 0 6px var(--crystal-glow));
             opacity: 0.8;
         }
 
@@ -172,8 +151,7 @@
             width: 100%;
             height: 100%;
             overflow: visible;
-            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 25px rgba(79, 195, 247, 0.5));
-            pointer-events: none;
+            /* УБРАНО: drop-shadow */
         }
 
         /* ============================================
@@ -188,7 +166,7 @@
             flex-direction: column;
             padding-top: var(--safe-top);
             padding-bottom: var(--safe-bottom);
-            pointer-events: none; /* Клики сквозь прозрачные зоны */
+            pointer-events: none;
         }
 
         .score-section,
@@ -196,7 +174,6 @@
             pointer-events: auto;
         }
 
-        /* Canvas для частиц */
         #particles-canvas {
             position: fixed;
             inset: 0;
@@ -231,9 +208,9 @@
             align-items: center;
             gap: 10px;
             color: #ffffff;
-            text-shadow: 0 0 20px var(--crystal-glow), 0 0 40px rgba(64, 196, 255, 0.6);
             font-variant-numeric: tabular-nums;
             transition: transform 0.15s;
+            /* УБРАНО: text-shadow */
         }
 
         .balance.pulse {
@@ -241,8 +218,18 @@
         }
 
         .ice-icon {
-            font-size: 32px;
-            filter: drop-shadow(0 0 15px var(--crystal-glow));
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            /* УБРАНО: filter: drop-shadow */
+        }
+
+        .ice-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         .income-info {
@@ -253,10 +240,9 @@
             font-weight: 700;
         }
 
-        .income-per-sec { color: var(--accent-green); text-shadow: 0 0 10px rgba(0, 230, 118, 0.6); }
-        .income-per-click { color: var(--accent-blue); text-shadow: 0 0 10px rgba(64, 196, 255, 0.6); }
+        .income-per-sec { color: var(--accent-green); }
+        .income-per-click { color: var(--accent-blue); }
 
-        /* Пустая зона под счетом (не кликается) */
         .empty-zone {
             flex: 1;
             min-height: 0;
@@ -271,8 +257,7 @@
             border-top-right-radius: 24px;
             padding: 15px;
             padding-bottom: 10px;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
-            border-top: 1px solid rgba(79, 195, 247, 0.2);
+            border-top: 1px solid rgba(79, 195, 247, 0.15);
             flex-shrink: 0;
         }
 
@@ -285,10 +270,28 @@
             font-size: 13px;
         }
 
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .tab .tab-icon {
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+        }
+
+        .tab .tab-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
         .tab.active {
             color: var(--accent-blue);
             position: relative;
-            text-shadow: 0 0 10px var(--accent-blue);
         }
         
         .tab.active::after {
@@ -300,7 +303,6 @@
             height: 2px;
             background-color: var(--accent-blue);
             border-radius: 2px;
-            box-shadow: 0 0 10px var(--accent-blue);
         }
 
         .cards-grid {
@@ -312,7 +314,7 @@
 
         .card {
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(79, 195, 247, 0.2);
+            border: 1px solid rgba(79, 195, 247, 0.15);
             border-radius: 14px;
             padding: 8px 4px;
             display: flex;
@@ -332,9 +334,18 @@
         }
 
         .card-icon {
-            font-size: 22px;
+            width: 26px;
+            height: 26px;
             margin-bottom: 4px;
-            filter: drop-shadow(0 0 5px var(--crystal-glow));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         .card-label {
@@ -372,11 +383,20 @@
 
         .nav-item.active {
             color: var(--accent-blue);
-            text-shadow: 0 0 10px var(--accent-blue);
         }
 
         .nav-icon {
-            font-size: 18px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         /* --- Вспышка --- */
@@ -404,10 +424,10 @@
             pointer-events: none;
             animation: floatUp 0.9s ease-out forwards;
             z-index: 100;
-            text-shadow: 0 0 15px var(--crystal-glow), 0 0 30px var(--accent-blue);
             font-size: 22px;
             font-variant-numeric: tabular-nums;
             will-change: transform, opacity;
+            /* УБРАНО: text-shadow */
         }
 
         @keyframes floatUp {
@@ -419,11 +439,17 @@
         /* --- Flying shard --- */
         .flying-ice {
             position: fixed;
-            font-size: 20px;
+            width: 24px;
+            height: 24px;
             pointer-events: none;
             z-index: 200;
-            filter: drop-shadow(0 0 12px var(--crystal-glow));
             will-change: transform, opacity;
+        }
+
+        .flying-ice svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
     </style>
 </head>
@@ -432,7 +458,6 @@
     <!-- ФОНОВЫЙ СЛОЙ -->
     <div class="bg-layer">
         <div class="stars-bg"></div>
-        <div class="crystal-halo"></div>
         
         <div class="crystal-wrapper" id="crystal-wrapper">
             <div class="orbit">
@@ -513,7 +538,19 @@
             <div class="subtitle">ВАШ ЛЁД</div>
             <div class="balance" id="balance-wrapper">
                 <span id="balance">0</span>
-                <span class="ice-icon">💎</span>
+                <span class="ice-icon">
+                    <!-- SVG иконка льда -->
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="16,2 28,10 28,22 16,30 4,22 4,10" fill="#4fc3f7" stroke="#b3e5fc" stroke-width="1.5" stroke-linejoin="round"/>
+                        <polygon points="16,2 28,10 16,14" fill="#e1f5fe" opacity="0.9"/>
+                        <polygon points="16,2 4,10 16,14" fill="#b3e5fc" opacity="0.9"/>
+                        <polygon points="16,30 28,22 16,18" fill="#0288d1" opacity="0.7"/>
+                        <polygon points="16,30 4,22 16,18" fill="#0277bd" opacity="0.7"/>
+                        <polygon points="16,14 16,18 28,22 28,10" fill="#29b6f6" opacity="0.6"/>
+                        <polygon points="16,14 16,18 4,22 4,10" fill="#4fc3f7" opacity="0.6"/>
+                        <line x1="16" y1="2" x2="16" y2="30" stroke="#ffffff" stroke-width="0.8" opacity="0.7"/>
+                    </svg>
+                </span>
             </div>
             <div class="income-info">
                 <span id="income-per-sec">+ 0/сек</span>
@@ -525,50 +562,127 @@
 
         <div class="bottom-panel">
             <div class="tabs">
-                <div class="tab active">Меню</div>
-                <div class="tab">Улучшения</div>
-                <div class="tab">Бонусы</div>
-                <div class="tab">Инвентарь</div>
+                <div class="tab active">
+                    <span class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </span>
+                    Меню
+                </div>
+                <div class="tab">
+                    <span class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </span>
+                    Улучшения
+                </div>
+                <div class="tab">
+                    <span class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </span>
+                    Бонусы
+                </div>
+                <div class="tab">
+                    <span class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <line x1="9" y1="3" x2="9" y2="21"/>
+                        </svg>
+                    </span>
+                    Инвентарь
+                </div>
             </div>
 
             <div class="cards-grid">
                 <div class="card orange" onclick="buyUpgrade(1)">
-                    <div class="card-icon">⭐</div>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="#ffd54f" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                        </svg>
+                    </div>
                     <div class="card-label">Рейтинг</div>
                 </div>
                 <div class="card green" onclick="buyUpgrade(2)">
-                    <div class="card-icon">💸</div>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#81c784" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
                     <div class="card-label">Перевести</div>
                 </div>
                 <div class="card purple" onclick="buyUpgrade(3)">
-                    <div class="card-icon">🕒</div>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#ce93d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
                     <div class="card-label">История</div>
                 </div>
                 <div class="card blue" onclick="buyUpgrade(4)">
-                    <div class="card-icon">🛍️</div>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#64b5f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                    </div>
                     <div class="card-label">Магазин</div>
                 </div>
             </div>
 
             <div class="nav-bar">
                 <div class="nav-item active">
-                    <span class="nav-icon">💎</span>
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="12,2 20,7 20,17 12,22 4,17 4,7"/>
+                        </svg>
+                    </span>
                     <span>Лёд</span>
                 </div>
                 <div class="nav-item">
-                    <span class="nav-icon">📊</span>
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                    </span>
                     <span>Рейтинг</span>
                 </div>
                 <div class="nav-item">
-                    <span class="nav-icon">⚔️</span>
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 17.5L3 6V3h3l11.5 11.5"/>
+                            <path d="M13 19l6-6"/>
+                            <path d="M16 16l4 4"/>
+                            <path d="M19 21l2-2"/>
+                        </svg>
+                    </span>
                     <span>Боссы</span>
                 </div>
                 <div class="nav-item">
-                    <span class="nav-icon">🛡️</span>
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </span>
                     <span>Персонаж</span>
                 </div>
                 <div class="nav-item">
-                    <span class="nav-icon">👤</span>
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </span>
                     <span>Профиль</span>
                 </div>
             </div>
@@ -618,7 +732,7 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // === ЧАСТИЦЫ ===
+        // === ЧАСТИЦЫ (убраны тени) ===
         const particles = [];
         const MAX_PARTICLES = 120;
 
@@ -663,8 +777,7 @@
                 ctx.rotate(p.rotation);
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;
-                ctx.shadowColor = '#4fc3f7';
-                ctx.shadowBlur = 10;
+                // УБРАНО: ctx.shadowColor и ctx.shadowBlur
                 ctx.beginPath();
                 ctx.moveTo(0, -p.size);
                 ctx.lineTo(p.size * 0.5, 0);
@@ -749,10 +862,19 @@
             setTimeout(() => el.remove(), 900);
         }
 
+        // SVG-иконка для летящего осколка
+        const ICE_SVG = `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="16,2 28,10 28,22 16,30 4,22 4,10" fill="#4fc3f7" stroke="#b3e5fc" stroke-width="1.5" stroke-linejoin="round"/>
+            <polygon points="16,2 28,10 16,14" fill="#e1f5fe" opacity="0.9"/>
+            <polygon points="16,2 4,10 16,14" fill="#b3e5fc" opacity="0.9"/>
+            <polygon points="16,30 28,22 16,18" fill="#0288d1" opacity="0.7"/>
+            <polygon points="16,30 4,22 16,18" fill="#0277bd" opacity="0.7"/>
+        </svg>`;
+
         function createFlyingShard(startX, startY) {
             const shard = document.createElement('div');
             shard.className = 'flying-ice';
-            shard.textContent = '💎';
+            shard.innerHTML = ICE_SVG;
             shard.style.left = startX + 'px';
             shard.style.top = startY + 'px';
             document.body.appendChild(shard);
