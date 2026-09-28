@@ -37,18 +37,16 @@
             height: 100vh;
             height: 100dvh;
             width: 100vw;
-            cursor: pointer;
         }
 
         /* ============================================
-           ФОНОВЫЙ СЛОЙ: Звёзды + Кристалл + Свечение
-           Всё это лежит на самом дне, никогда не обрежется
+           ФОНОВЫЙ СЛОЙ: Звёзды + Свечение + Кристалл
            ============================================ */
         .bg-layer {
             position: fixed;
             inset: 0;
             z-index: 1;
-            pointer-events: none;
+            pointer-events: none; /* Всё по умолчанию не кликается */
             overflow: hidden;
         }
 
@@ -74,10 +72,10 @@
             50% { opacity: 0.7; }
         }
 
-        /* Большое свечение вокруг кристалла — БЕЗ ОБРЕЗКИ */
+        /* Свечение вокруг кристалла — теперь смещено вверх вместе с кристаллом */
         .crystal-halo {
             position: absolute;
-            top: 50%;
+            top: 38%; /* Было 50% — подняли выше */
             left: 50%;
             width: 500px;
             height: 500px;
@@ -92,14 +90,25 @@
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
         }
 
-        /* Позиция кристалла в фоне — примерно центр, чуть выше */
+        /* Контейнер кристалла — поднят выше центра экрана */
         .crystal-wrapper {
             position: absolute;
-            top: 50%;
+            top: 38%; /* Было 50% — теперь кристалл выше */
             left: 50%;
             transform: translate(-50%, -50%);
             width: 220px;
             height: 280px;
+            pointer-events: auto; /* ВКЛЮЧАЕМ клики только здесь */
+            cursor: pointer;
+            /* Ограничиваем зону клика формой кристалла (ромбовидная) */
+            clip-path: polygon(
+                50% 0%,      /* вершина */
+                95% 35%,     /* правая верхняя */
+                88% 75%,     /* правая нижняя */
+                50% 100%,    /* основание */
+                12% 75%,     /* левая нижняя */
+                5% 35%       /* левая верхняя */
+            );
         }
 
         /* Орбиты с осколками */
@@ -111,6 +120,7 @@
             height: 320px;
             transform: translate(-50%, -50%);
             animation: orbitRotate 12s linear infinite;
+            pointer-events: none;
         }
 
         .orbit.reverse {
@@ -146,7 +156,6 @@
             width: 100%;
             height: 100%;
             position: relative;
-            transition: transform 0.15s;
         }
 
         .crystal.clicked {
@@ -164,10 +173,11 @@
             height: 100%;
             overflow: visible;
             filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 25px rgba(79, 195, 247, 0.5));
+            pointer-events: none;
         }
 
         /* ============================================
-           ВЕРХНИЙ СЛОЙ: UI и клики
+           ВЕРХНИЙ СЛОЙ: UI
            ============================================ */
         .app-layer {
             position: relative;
@@ -178,17 +188,15 @@
             flex-direction: column;
             padding-top: var(--safe-top);
             padding-bottom: var(--safe-bottom);
-            pointer-events: none; /* Пропускаем клики сквозь прозрачные зоны */
+            pointer-events: none; /* Клики сквозь прозрачные зоны */
         }
 
-        /* Все интерактивные элементы возвращают pointer-events */
         .score-section,
-        .bottom-panel,
-        .tap-zone {
+        .bottom-panel {
             pointer-events: auto;
         }
 
-        /* Canvas для частиц — поверх кристалла */
+        /* Canvas для частиц */
         #particles-canvas {
             position: fixed;
             inset: 0;
@@ -248,11 +256,9 @@
         .income-per-sec { color: var(--accent-green); text-shadow: 0 0 10px rgba(0, 230, 118, 0.6); }
         .income-per-click { color: var(--accent-blue); text-shadow: 0 0 10px rgba(64, 196, 255, 0.6); }
 
-        /* --- Tap Zone (прозрачная зона для кликов по кристаллу) --- */
-        .tap-zone {
+        /* Пустая зона под счетом (не кликается) */
+        .empty-zone {
             flex: 1;
-            position: relative;
-            cursor: pointer;
             min-height: 0;
         }
 
@@ -373,7 +379,7 @@
             font-size: 18px;
         }
 
-        /* --- Вспышка при клике --- */
+        /* --- Вспышка --- */
         .flash {
             position: fixed;
             width: 100px;
@@ -423,16 +429,12 @@
 </head>
 <body>
 
-    <!-- ============================================
-         ФОНОВЫЙ СЛОЙ: Звёзды, свечение, кристалл
-         Никогда не обрезается, всегда виден
-         ============================================ -->
+    <!-- ФОНОВЫЙ СЛОЙ -->
     <div class="bg-layer">
         <div class="stars-bg"></div>
         <div class="crystal-halo"></div>
         
         <div class="crystal-wrapper" id="crystal-wrapper">
-            <!-- Орбиты с осколками -->
             <div class="orbit">
                 <div class="shard"></div>
                 <div class="shard"></div>
@@ -444,7 +446,6 @@
                 <div class="shard"></div>
             </div>
             
-            <!-- Кристалл -->
             <div class="crystal" id="crystal">
                 <svg class="crystal-svg" viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg">
                     <defs>
@@ -454,22 +455,18 @@
                             <stop offset="70%" stop-color="#81d4fa"/>
                             <stop offset="100%" stop-color="#29b6f6"/>
                         </linearGradient>
-                        
                         <linearGradient id="crystalFace2" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#4fc3f7"/>
                             <stop offset="100%" stop-color="#0288d1"/>
                         </linearGradient>
-                        
                         <linearGradient id="crystalFace3" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#0288d1"/>
                             <stop offset="100%" stop-color="#01579b"/>
                         </linearGradient>
-                        
                         <linearGradient id="crystalFace4" x1="100%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stop-color="#b3e5fc"/>
                             <stop offset="100%" stop-color="#4fc3f7"/>
                         </linearGradient>
-                        
                         <radialGradient id="crystalShine" cx="30%" cy="20%" r="50%">
                             <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
                             <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
@@ -507,12 +504,9 @@
         </div>
     </div>
 
-    <!-- Canvas для частиц -->
     <canvas id="particles-canvas"></canvas>
 
-    <!-- ============================================
-         ВЕРХНИЙ СЛОЙ: UI
-         ============================================ -->
+    <!-- ВЕРХНИЙ СЛОЙ: UI -->
     <div class="app-layer">
         
         <div class="score-section">
@@ -527,8 +521,7 @@
             </div>
         </div>
 
-        <!-- Прозрачная зона для кликов -->
-        <div class="tap-zone" id="tap-zone"></div>
+        <div class="empty-zone"></div>
 
         <div class="bottom-panel">
             <div class="tabs">
@@ -606,12 +599,11 @@
         const balanceWrapper = document.getElementById('balance-wrapper');
         const incomeSecEl = document.getElementById('income-per-sec');
         const incomeClickEl = document.getElementById('income-per-click');
-        const tapZone = document.getElementById('tap-zone');
+        const crystalWrapper = document.getElementById('crystal-wrapper');
         const crystal = document.getElementById('crystal');
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
 
-        // Canvas resize
         let canvasW = 0, canvasH = 0;
         function resizeCanvas() {
             const dpr = window.devicePixelRatio || 1;
@@ -626,7 +618,7 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Particles
+        // === ЧАСТИЦЫ ===
         const particles = [];
         const MAX_PARTICLES = 120;
 
@@ -706,8 +698,9 @@
             }
         }, 1000);
 
-        // Клик по прозрачной зоне
-        tapZone.addEventListener('click', (e) => {
+        // === КЛИК ТОЛЬКО ПО КРИСТАЛЛУ ===
+        crystalWrapper.addEventListener('click', (e) => {
+            e.stopPropagation();
             const x = e.clientX;
             const y = e.clientY;
 
