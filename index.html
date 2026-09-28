@@ -17,7 +17,7 @@
             --accent-blue: #40c4ff;
             --text-main: #ffffff;
             --text-secondary: #90a4ae;
-            --panel-bg: rgba(15, 26, 58, 0.85);
+            --panel-bg: rgba(15, 26, 58, 0.92);
             
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -49,8 +49,9 @@
         /* --- Score Section --- */
         .score-section {
             text-align: center;
-            padding: 20px 0 5px 0;
+            padding: 15px 0 0 0;
             z-index: 10;
+            flex-shrink: 0;
         }
 
         .subtitle {
@@ -62,9 +63,9 @@
         }
 
         .balance {
-            font-size: 48px;
+            font-size: 44px;
             font-weight: 900;
-            margin: 5px 0;
+            margin: 4px 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -76,11 +77,10 @@
         }
 
         .ice-icon {
-            font-size: 34px;
+            font-size: 32px;
             filter: drop-shadow(0 0 15px var(--ice-glow));
         }
 
-        /* Пульсация баланса при получении льда */
         .balance.pulse {
             animation: balancePulse 0.3s ease-out;
         }
@@ -94,8 +94,8 @@
         .income-info {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            font-size: 15px;
+            gap: 3px;
+            font-size: 14px;
             font-weight: 700;
         }
 
@@ -111,9 +111,9 @@
             align-items: center;
             overflow: hidden;
             cursor: pointer;
+            min-height: 0; /* Важно для flex-контейнера! */
         }
 
-        /* Canvas для частиц — лежит ПОД айсбергом, но над фоном */
         #particles-canvas {
             position: absolute;
             top: 0;
@@ -124,30 +124,33 @@
             z-index: 5;
         }
 
-        /* Контейнер айсберга */
+        /* Контейнер айсберга — компактнее и с отступами */
         .iceberg-container {
             position: relative;
-            width: 320px;
-            height: 420px;
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 10px 20px 40px 20px; /* Отступ снизу, чтобы не было обрезки */
             z-index: 2;
         }
 
-        /* SVG Айсберг */
+        /* SVG Айсберг — теперь с сохранением пропорций */
         .iceberg-svg {
             width: 100%;
             height: 100%;
+            max-width: 340px;
+            max-height: 100%;
             overflow: visible;
-            filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.7));
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
             animation: float 5s ease-in-out infinite;
             will-change: transform;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(-0.5deg); }
-            50% { transform: translateY(-12px) rotate(0.5deg); }
+            50% { transform: translateY(-8px) rotate(0.5deg); }
         }
 
         .shake {
@@ -161,25 +164,12 @@
             40%, 60% { transform: translate3d(8px, 0, 0) rotate(2deg); }
         }
 
+        /* Свечение убрано или сильно уменьшено, чтобы не съедало края */
         .iceberg-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 400px;
-            background: radial-gradient(ellipse, rgba(128, 222, 234, 0.3) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
-            animation: pulse 4s ease-in-out infinite;
+            display: none;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-        }
-
-        /* --- Всплывающий текст (остается DOM — его мало) --- */
+        /* --- Всплывающий текст --- */
         .float-text {
             position: absolute;
             color: #ffffff;
@@ -198,7 +188,7 @@
             100% { opacity: 0; transform: translateY(-80px) scale(1.4); }
         }
 
-        /* --- Летящий кусок льда к балансу --- */
+        /* --- Летящий кусок льда --- */
         .flying-ice {
             position: fixed;
             font-size: 22px;
@@ -220,6 +210,7 @@
             z-index: 20;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
             border-top: 1px solid rgba(128, 222, 234, 0.2);
+            flex-shrink: 0;
         }
 
         .tabs {
@@ -361,134 +352,118 @@
     </div>
 
     <div class="game-area" id="game-area">
-        <!-- Canvas для частиц осколков -->
         <canvas id="particles-canvas"></canvas>
         
         <div class="iceberg-container" id="iceberg-container">
-            <div class="iceberg-glow"></div>
-            
-            <!-- SVG Айсберг (уменьшен, отражение уменьшено) -->
-            <svg class="iceberg-svg" id="iceberg" viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Айсберг перерисован: компактнее, с видимыми гранями и бликами -->
+            <svg class="iceberg-svg" id="iceberg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="iceTopGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
-                        <stop offset="25%" stop-color="#e0f7fa" stop-opacity="1"/>
-                        <stop offset="60%" stop-color="#80deea" stop-opacity="1"/>
-                        <stop offset="100%" stop-color="#26c6da" stop-opacity="1"/>
+                    <!-- Основной градиент льда -->
+                    <linearGradient id="iceMain" x1="20%" y1="0%" x2="80%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff"/>
+                        <stop offset="30%" stop-color="#e0f7fa"/>
+                        <stop offset="65%" stop-color="#80deea"/>
+                        <stop offset="100%" stop-color="#4dd0e1"/>
                     </linearGradient>
                     
-                    <linearGradient id="iceBottomGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#4dd0e1" stop-opacity="0.9"/>
-                        <stop offset="50%" stop-color="#00838f" stop-opacity="0.7"/>
-                        <stop offset="100%" stop-color="#004d40" stop-opacity="0.3"/>
+                    <!-- Боковая грань (тень) -->
+                    <linearGradient id="iceSide" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#26c6da"/>
+                        <stop offset="100%" stop-color="#4dd0e1"/>
                     </linearGradient>
                     
-                    <radialGradient id="iceHighlight" cx="35%" cy="25%" r="50%">
-                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+                    <!-- Подводная часть -->
+                    <linearGradient id="iceBottom" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#4dd0e1" stop-opacity="0.85"/>
+                        <stop offset="60%" stop-color="#00838f" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#004d40" stop-opacity="0.2"/>
+                    </linearGradient>
+                    
+                    <!-- Блик сверху -->
+                    <radialGradient id="iceShine" cx="35%" cy="20%" r="45%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
                         <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
                     </radialGradient>
-                    
-                    <filter id="glow">
-                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                        <feMerge>
-                            <feMergeNode in="coloredBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
                 </defs>
                 
-                <!-- ПОДВОДНАЯ ЧАСТЬ -->
-                <path d="M 80 240 
-                         C 60 280, 55 340, 90 375 
-                         C 125 395, 195 395, 230 375 
-                         C 265 340, 260 280, 240 240 
+                <!-- ПОДВОДНАЯ ЧАСТЬ (видна, но полупрозрачна) -->
+                <path d="M 85 250 
+                         C 65 290, 60 340, 90 370 
+                         C 120 390, 180 390, 210 370 
+                         C 240 340, 235 290, 215 250 
                          Z" 
-                      fill="url(#iceBottomGradient)" 
-                      filter="url(#glow)"
-                      opacity="0.6"/>
+                      fill="url(#iceBottom)"/>
                 
                 <!-- ОСНОВНАЯ НАДВОДНАЯ ЧАСТЬ -->
-                <path d="M 90 240 
-                         L 82 200 
-                         C 78 170, 92 120, 112 90 
-                         C 127 65, 150 48, 165 45 
-                         C 183 43, 200 55, 215 78 
-                         C 230 102, 235 140, 228 180 
-                         L 222 240 
-                         C 210 245, 100 245, 90 240
+                <path d="M 90 250 
+                         L 85 210 
+                         C 80 175, 95 125, 115 95 
+                         C 130 72, 150 55, 165 52 
+                         C 180 50, 195 60, 210 82 
+                         C 225 105, 230 145, 225 185 
+                         L 218 250 
                          Z" 
-                      fill="url(#iceTopGradient)"/>
+                      fill="url(#iceMain)"/>
                 
-                <!-- БОКОВЫЕ ГРАНИ -->
-                <path d="M 90 240 
-                         L 82 200 
-                         C 78 170, 92 120, 112 90 
-                         C 122 80, 132 72, 142 68
-                         L 150 100
-                         C 130 140, 125 190, 128 240
+                <!-- ЛЕВАЯ ГРАНЬ (тень для объема) -->
+                <path d="M 90 250 
+                         L 85 210 
+                         C 80 175, 95 125, 115 95 
+                         C 122 85, 130 78, 138 74
+                         L 145 105
+                         C 130 140, 125 190, 128 250
                          Z" 
-                      fill="#b2ebf2" 
+                      fill="#80deea" 
+                      opacity="0.7"/>
+                
+                <!-- ПРАВАЯ ГРАНЬ -->
+                <path d="M 218 250 
+                         L 225 185 
+                         C 230 145, 225 105, 210 82 
+                         C 205 73, 198 66, 190 62
+                         L 185 95
+                         C 195 125, 200 185, 195 250
+                         Z" 
+                      fill="#26c6da" 
                       opacity="0.6"/>
                 
-                <path d="M 222 240 
-                         L 228 180 
-                         C 235 140, 230 102, 215 78 
-                         C 210 70, 202 62, 193 58
-                         L 188 90
-                         C 200 120, 205 180, 200 240
+                <!-- БЛИК (свет сверху-слева) -->
+                <path d="M 115 95 
+                         C 130 72, 150 55, 165 52 
+                         C 168 62, 165 90, 155 115
+                         C 140 110, 125 105, 115 95
                          Z" 
-                      fill="#4dd0e1" 
-                      opacity="0.5"/>
+                      fill="url(#iceShine)"/>
                 
-                <!-- БЛИК -->
-                <path d="M 112 90 
-                         C 127 65, 150 48, 165 45 
-                         C 170 55, 168 85, 158 112
-                         C 143 108, 125 100, 112 90
-                         Z" 
-                      fill="url(#iceHighlight)"/>
-                
-                <!-- ТРЕЩИНЫ -->
-                <path d="M 148 85 L 145 145 L 155 165 L 148 220" 
+                <!-- ТРЕЩИНЫ / грани -->
+                <path d="M 145 90 L 142 150 L 152 170 L 145 230" 
                       stroke="#4dd0e1" 
                       stroke-width="1.5" 
                       fill="none" 
-                      opacity="0.6"/>
+                      opacity="0.5"/>
                 
-                <path d="M 185 78 L 190 128 L 180 158" 
+                <path d="M 180 85 L 185 130 L 175 160" 
                       stroke="#26c6da" 
                       stroke-width="1" 
                       fill="none" 
-                      opacity="0.5"/>
+                      opacity="0.4"/>
                 
-                <path d="M 118 172 L 132 192 L 122 222" 
+                <path d="M 120 175 L 132 195 L 122 225" 
                       stroke="#80deea" 
                       stroke-width="1" 
                       fill="none" 
                       opacity="0.4"/>
                 
-                <!-- ВНУТРЕННЯЯ ГРАНЬ -->
-                <path d="M 130 120 
-                         C 140 110, 158 105, 175 110 
-                         C 180 130, 180 150, 175 170
-                         C 158 165, 140 165, 130 170
-                         C 125 150, 125 130, 130 120
-                         Z" 
-                      fill="#ffffff" 
-                      opacity="0.15"/>
-                
-                <!-- ЛИНИЯ ВОДЫ -->
-                <line x1="0" y1="240" x2="320" y2="240" 
+                <!-- ЛИНИЯ ВОДЫ (видна чётко) -->
+                <line x1="0" y1="250" x2="300" y2="250" 
                       stroke="#40c4ff" 
                       stroke-width="2" 
-                      opacity="0.7"
-                      filter="url(#glow)"/>
+                      opacity="0.7"/>
                 
-                <!-- ОТРАЖЕНИЕ (уменьшено!) -->
-                <ellipse cx="160" cy="250" rx="55" ry="5" 
+                <!-- ОТРАЖЕНИЕ (маленькое, компактное) -->
+                <ellipse cx="150" cy="258" rx="45" ry="4" 
                          fill="#40c4ff" 
-                         opacity="0.2" 
-                         filter="url(#glow)"/>
+                         opacity="0.25"/>
             </svg>
         </div>
     </div>
@@ -557,16 +532,12 @@
             tg.setBackgroundColor('#050a1a');
         } else {
             tg = {
-                close: () => alert("Это приложение для Telegram!"),
-                HapticFeedback: {
-                    impactOccurred: () => {},
-                    notificationOccurred: () => {}
-                },
+                close: () => {},
+                HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} },
                 showAlert: (msg) => alert(msg)
             };
         }
 
-        // --- Game State ---
         let balance = 0;
         let incomePerSecond = 0;
         let incomePerClick = 1;
@@ -582,7 +553,7 @@
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
 
-        // --- Canvas размер с учетом DPR (для четкости на retina) ---
+        // --- Canvas размер с DPR ---
         let canvasW = 0, canvasH = 0;
         function resizeCanvas() {
             const dpr = window.devicePixelRatio || 1;
@@ -598,24 +569,20 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // --- Система частиц на Canvas ---
+        // --- Частицы ---
         const particles = [];
-        const MAX_PARTICLES = 200; // Защита от перегрузки
+        const MAX_PARTICLES = 150;
 
         function spawnParticles(x, y, count) {
             for (let i = 0; i < count; i++) {
                 if (particles.length >= MAX_PARTICLES) break;
-                
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 6 + 3;
-                const size = Math.random() * 5 + 3;
-                
+                const speed = Math.random() * 5 + 2;
                 particles.push({
-                    x: x,
-                    y: y,
+                    x, y,
                     vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed - 2, // Немного вверх
-                    size: size,
+                    vy: Math.sin(angle) * speed - 2,
+                    size: Math.random() * 5 + 3,
                     rotation: Math.random() * Math.PI * 2,
                     rotSpeed: (Math.random() - 0.5) * 0.3,
                     life: 1.0,
@@ -627,36 +594,28 @@
 
         let lastTime = 0;
         function animateParticles(time) {
-            const dt = Math.min((time - lastTime) / 16.67, 2); // Нормализация к 60fps
+            const dt = Math.min((time - lastTime) / 16.67, 2);
             lastTime = time;
-            
             ctx.clearRect(0, 0, canvasW, canvasH);
             
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
-                
-                // Физика
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
-                p.vy += 0.35 * dt; // Гравитация
-                p.vx *= 0.98; // Трение
+                p.vy += 0.35 * dt;
+                p.vx *= 0.98;
                 p.rotation += p.rotSpeed * dt;
                 p.life -= p.decay * dt;
                 
-                if (p.life <= 0) {
-                    particles.splice(i, 1);
-                    continue;
-                }
+                if (p.life <= 0) { particles.splice(i, 1); continue; }
                 
-                // Рисуем ромб (кристалл)
                 ctx.save();
                 ctx.translate(p.x, p.y);
                 ctx.rotate(p.rotation);
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;
                 ctx.shadowColor = '#80deea';
-                ctx.shadowBlur = 8;
-                
+                ctx.shadowBlur = 6;
                 ctx.beginPath();
                 ctx.moveTo(0, -p.size);
                 ctx.lineTo(p.size * 0.7, 0);
@@ -664,15 +623,12 @@
                 ctx.lineTo(-p.size * 0.7, 0);
                 ctx.closePath();
                 ctx.fill();
-                
                 ctx.restore();
             }
-            
             requestAnimationFrame(animateParticles);
         }
         requestAnimationFrame(animateParticles);
 
-        // --- Форматирование чисел ---
         function formatNumber(num) {
             if (num >= 1e9) return (num / 1e9).toFixed(2) + ' млрд';
             if (num >= 1e6) return (num / 1e6).toFixed(2) + ' млн';
@@ -686,7 +642,6 @@
             incomeClickEl.textContent = `+ ${formatNumber(incomePerClick)}/удар`;
         }
 
-        // --- Пассивный доход ---
         setInterval(() => {
             if (incomePerSecond > 0) {
                 balance += incomePerSecond;
@@ -694,7 +649,6 @@
             }
         }, 1000);
 
-        // --- Клик по айсбергу ---
         gameArea.addEventListener('click', (e) => {
             const rect = gameArea.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -703,7 +657,6 @@
             balance += incomePerClick;
             updateUI();
 
-            // Эффекты
             spawnParticles(x, y, 8);
             createFloatingText(incomePerClick, x, y);
             createFlyingIce(e.clientX, e.clientY);
@@ -725,7 +678,6 @@
             balanceWrapper.classList.add('pulse');
         }
 
-        // --- Всплывающий текст ---
         function createFloatingText(amount, x, y) {
             const el = document.createElement('div');
             el.className = 'float-text';
@@ -736,7 +688,6 @@
             setTimeout(() => el.remove(), 900);
         }
 
-        // --- Летящий кусок льда к балансу ---
         function createFlyingIce(startX, startY) {
             const ice = document.createElement('div');
             ice.className = 'flying-ice';
@@ -745,48 +696,37 @@
             ice.style.top = startY + 'px';
             document.body.appendChild(ice);
             
-            // Получаем координаты цели (иконки льда в балансе)
             const target = document.querySelector('.ice-icon');
             const targetRect = target.getBoundingClientRect();
             const targetX = targetRect.left + targetRect.width / 2;
             const targetY = targetRect.top + targetRect.height / 2;
             
-            // Анимация через requestAnimationFrame для плавности и контроля
             const startTime = performance.now();
-            const duration = 600; // мс
+            const duration = 600;
             const startXVal = startX;
             const startYVal = startY;
             const deltaX = targetX - startXVal;
             const deltaY = targetY - startYVal;
-            
-            // Контрольная точка для дуги (изгиб вверх)
             const controlX = startXVal + deltaX * 0.5;
             const controlY = Math.min(startYVal, targetY) - 100;
             
             function animate(now) {
                 const t = Math.min((now - startTime) / duration, 1);
-                // Квадратичная кривая Безье
                 const mt = 1 - t;
                 const x = mt * mt * startXVal + 2 * mt * t * controlX + t * t * targetX;
                 const y = mt * mt * startYVal + 2 * mt * t * controlY + t * t * targetY;
-                
                 const scale = 1 - t * 0.5;
                 const opacity = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
                 
                 ice.style.transform = `translate(${x - startXVal}px, ${y - startYVal}px) scale(${scale})`;
                 ice.style.opacity = opacity;
                 
-                if (t < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    ice.remove();
-                }
+                if (t < 1) requestAnimationFrame(animate);
+                else ice.remove();
             }
-            
             requestAnimationFrame(animate);
         }
 
-        // --- Улучшения ---
         function buyUpgrade(type) {
             if (balance >= upgradeCost) {
                 balance -= upgradeCost;
