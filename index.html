@@ -175,6 +175,7 @@
             padding: 15px 0 0 0;
             flex-shrink: 0;
             position: relative;
+            z-index: 20;
         }
 
         .subtitle {
@@ -226,28 +227,29 @@
         .empty-zone {
             flex: 1;
             min-height: 0;
+            pointer-events: none;
         }
 
         /* ============================================
-           НОВЫЕ ЭКРАНЫ (Боссы, Персонаж, Профиль)
+           ЭКРАНЫ (Боссы, Персонаж, Профиль)
            ============================================ */
         .screen {
-            position: absolute;
+            position: fixed;
             inset: 0;
-            z-index: 30;
+            z-index: 100;
             background: linear-gradient(180deg, #0a1530 0%, #03060f 100%);
-            padding: calc(var(--safe-top) + 50px) 15px 100px 15px;
+            padding: calc(var(--safe-top) + 60px) 15px 100px 15px;
             overflow-y: auto;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.25s;
-            display: none;
+            visibility: hidden;
         }
 
         .screen.active {
             opacity: 1;
             pointer-events: auto;
-            display: block;
+            visibility: visible;
         }
 
         .screen-heading {
@@ -268,7 +270,7 @@
         }
 
         .back-btn {
-            position: absolute;
+            position: fixed;
             top: calc(var(--safe-top) + 12px);
             left: 14px;
             width: 40px;
@@ -283,7 +285,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 40;
+            z-index: 200;
             transition: transform 0.1s;
         }
 
@@ -297,11 +299,6 @@
             margin: 0 0 20px 0;
             font-size: 14px;
             font-weight: 700;
-        }
-
-        .boss-timer {
-            color: var(--accent-blue);
-            font-variant-numeric: tabular-nums;
         }
 
         .boss-ready-text {
@@ -422,17 +419,6 @@
             color: var(--text-secondary);
             font-size: 14px;
             margin: 0;
-        }
-
-        .boss-rewards {
-            background: rgba(0, 230, 118, 0.1);
-            border: 1px solid rgba(0, 230, 118, 0.3);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 13px;
-            color: var(--accent-green);
-            font-weight: 700;
-            margin: 0 0 12px 0;
         }
 
         /* ============================================
@@ -644,8 +630,6 @@
             font-weight: 800;
             padding: 4px 12px;
             border-radius: 20px;
-            margin: 0 auto 20px auto;
-            text-align: center;
         }
 
         .profile-rank-wrapper {
@@ -766,6 +750,8 @@
             border-top: 1px solid rgba(79, 195, 247, 0.15);
             flex-shrink: 0;
             pointer-events: auto;
+            position: relative;
+            z-index: 50;
         }
 
         .main-tabs {
@@ -932,6 +918,10 @@
             font-weight: 600;
             cursor: pointer;
             transition: color 0.15s;
+            position: relative;
+            z-index: 60;
+            pointer-events: auto;
+            padding: 4px 8px;
         }
 
         .nav-item.active {
@@ -959,7 +949,7 @@
             font-weight: 900;
             pointer-events: none;
             animation: floatUp 0.9s ease-out forwards;
-            z-index: 100;
+            z-index: 300;
             font-size: 22px;
             font-variant-numeric: tabular-nums;
             will-change: transform, opacity;
@@ -1181,9 +1171,6 @@
         </div>
     </div>
 
-    <!-- ============================================
-         ЭКРАН БОССОВ
-         ============================================ -->
     <div class="screen" id="screen-bosses">
         <div class="back-btn" data-close="bosses">←</div>
         
@@ -1192,7 +1179,7 @@
             <p>Сразись с ледяным монстром</p>
         </div>
 
-        <div class="boss-status" id="boss-status">
+        <div class="boss-status">
             <span id="boss-status-text">Загрузка...</span>
         </div>
 
@@ -1225,9 +1212,6 @@
         </div>
     </div>
 
-    <!-- ============================================
-         ЭКРАН ПЕРСОНАЖА
-         ============================================ -->
     <div class="screen" id="screen-character">
         <div class="back-btn" data-close="character">←</div>
         
@@ -1267,9 +1251,6 @@
         <div id="char-upgrades-list"></div>
     </div>
 
-    <!-- ============================================
-         ЭКРАН ПРОФИЛЯ
-         ============================================ -->
     <div class="screen" id="screen-profile">
         <div class="back-btn" data-close="profile">←</div>
         
@@ -1435,14 +1416,8 @@
     </div>
 
     <script>
-        // ==================================================
-        // ⚙️ URL ЛИДЕРБОРДА
-        // ==================================================
         const LEADERBOARD_API = 'https://script.google.com/macros/s/AKfycbzPH2jYlMEAuFxBcMkADEbrHg0qw1To0to6d3Eb574Lb9wY4j4_MRqpV5n-lCSCLeiG/exec';
-        
-        // ==================================================
 
-        // === TELEGRAM ===
         let tg = window.Telegram?.WebApp;
         let TG_USER = null;
         
@@ -1451,10 +1426,7 @@
             tg.expand();
             tg.setHeaderColor('#03060f');
             tg.setBackgroundColor('#03060f');
-            
-            if (tg.initDataUnsafe?.user) {
-                TG_USER = tg.initDataUnsafe.user;
-            }
+            if (tg.initDataUnsafe?.user) TG_USER = tg.initDataUnsafe.user;
         } else {
             tg = {
                 close: () => {},
@@ -1464,7 +1436,6 @@
             };
         }
 
-        // === ДАННЫЕ АПГРЕЙДОВ ===
         const MINING_UPGRADES = [
             { id: 'auto1', name: 'Кристалл', baseCost: 25, costMult: 1.15, effect: 1, icon: 'cyan', color: 'orange' },
             { id: 'auto2', name: 'Ледник',   baseCost: 250, costMult: 1.15, effect: 8, icon: 'blue', color: 'green' },
@@ -1479,52 +1450,13 @@
             { id: 'click4', name: 'Лазер',  baseCost: 15000, costMult: 1.4, effect: 120, icon: 'laser', color: 'blue' },
         ];
 
-        // === АПГРЕЙДЫ ПЕРСОНАЖА ===
         const CHAR_UPGRADES = [
-            {
-                id: 'str',
-                name: 'Сила льда',
-                icon: '💪',
-                desc: '+10% к клику',
-                baseCost: 500,
-                costMult: 1.5,
-                effect: 0.1,
-                type: 'clickMultiplier'
-            },
-            {
-                id: 'spd',
-                name: 'Скорость',
-                icon: '⚡',
-                desc: '+5% к авто-доходу',
-                baseCost: 1000,
-                costMult: 1.5,
-                effect: 0.05,
-                type: 'autoMultiplier'
-            },
-            {
-                id: 'luck',
-                name: 'Удача',
-                icon: '🍀',
-                desc: '+2% шанс крита (×10)',
-                baseCost: 2500,
-                costMult: 1.6,
-                effect: 0.02,
-                type: 'critChance'
-            },
-            {
-                id: 'master',
-                name: 'Мастерство',
-                icon: '🎓',
-                desc: '−3% к цене апгрейдов',
-                baseCost: 5000,
-                costMult: 1.7,
-                effect: 0.03,
-                type: 'discount',
-                maxLevel: 15
-            },
+            { id: 'str', name: 'Сила льда', icon: '💪', desc: '+10% к клику', baseCost: 500, costMult: 1.5, effect: 0.1 },
+            { id: 'spd', name: 'Скорость', icon: '⚡', desc: '+5% к авто-доходу', baseCost: 1000, costMult: 1.5, effect: 0.05 },
+            { id: 'luck', name: 'Удача', icon: '🍀', desc: '+2% шанс крита (×10)', baseCost: 2500, costMult: 1.6, effect: 0.02 },
+            { id: 'master', name: 'Мастерство', icon: '🎓', desc: '−3% к цене апгрейдов', baseCost: 5000, costMult: 1.7, effect: 0.03, maxLevel: 15 },
         ];
 
-        // === БОССЫ ===
         const BOSSES = [
             { name: 'Ледяной Дракон', art: '🐉', hpMult: 60 },
             { name: 'Снежный Волк', art: '🐺', hpMult: 40 },
@@ -1545,12 +1477,11 @@
             laser: `<svg viewBox="0 0 24 24" fill="none" stroke="#64b5f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>`,
         };
 
-        // === СОСТОЯНИЕ ИГРЫ ===
         const SAVE_KEY = 'ice_crystal_clicker_save_v3';
         const OFFLINE_MAX_HOURS = 4;
         const OFFLINE_RATE = 0.5;
-        const BOSS_INTERVAL = 5 * 60 * 1000; // 5 минут
-        const BOSS_FIGHT_DURATION = 30 * 1000; // 30 секунд на бой
+        const BOSS_INTERVAL = 5 * 60 * 1000;
+        const BOSS_FIGHT_DURATION = 30 * 1000;
         
         let state = {
             balance: 0,
@@ -1559,32 +1490,15 @@
             activeTab: 'mining',
             upgrades: {},
             charUpgrades: {},
-            stats: {
-                clicks: 0,
-                totalEarned: 0,
-                startDate: Date.now(),
-                bossesKilled: 0,
-                bossEarned: 0,
-            },
-            boss: {
-                active: false,
-                name: '',
-                art: '',
-                hp: 0,
-                maxHp: 0,
-                startTime: 0,
-                nextSpawn: Date.now() + BOSS_INTERVAL,
-            },
+            stats: { clicks: 0, totalEarned: 0, startDate: Date.now(), bossesKilled: 0, bossEarned: 0 },
+            boss: { active: false, name: '', art: '', hp: 0, maxHp: 0, startTime: 0, nextSpawn: Date.now() + BOSS_INTERVAL },
             customNickname: '',
             lastSeen: Date.now(),
+            myRank: null,
         };
 
-        [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => {
-            state.upgrades[u.id] = state.upgrades[u.id] || 0;
-        });
-        CHAR_UPGRADES.forEach(u => {
-            state.charUpgrades[u.id] = state.charUpgrades[u.id] || 0;
-        });
+        [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => state.upgrades[u.id] = state.upgrades[u.id] || 0);
+        CHAR_UPGRADES.forEach(u => state.charUpgrades[u.id] = state.charUpgrades[u.id] || 0);
 
         function loadState() {
             try {
@@ -1595,12 +1509,8 @@
                     if (!state.stats) state.stats = { clicks: 0, totalEarned: 0, startDate: Date.now(), bossesKilled: 0, bossEarned: 0 };
                     if (!state.boss) state.boss = { active: false, name: '', art: '', hp: 0, maxHp: 0, startTime: 0, nextSpawn: Date.now() + BOSS_INTERVAL };
                     if (!state.charUpgrades) state.charUpgrades = {};
-                    [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => {
-                        if (state.upgrades[u.id] === undefined) state.upgrades[u.id] = 0;
-                    });
-                    CHAR_UPGRADES.forEach(u => {
-                        if (state.charUpgrades[u.id] === undefined) state.charUpgrades[u.id] = 0;
-                    });
+                    [...MINING_UPGRADES, ...CLICK_UPGRADES].forEach(u => { if (state.upgrades[u.id] === undefined) state.upgrades[u.id] = 0; });
+                    CHAR_UPGRADES.forEach(u => { if (state.charUpgrades[u.id] === undefined) state.charUpgrades[u.id] = 0; });
                 }
             } catch (e) { console.warn('Load error', e); }
         }
@@ -1628,15 +1538,13 @@
         }
 
         function getDiscount() {
-            const lvl = state.charUpgrades.master || 0;
-            return Math.min(0.45, lvl * 0.03); // максимум 45% скидки
+            return Math.min(0.45, (state.charUpgrades.master || 0) * 0.03);
         }
 
         function getCost(upgrade) {
             const level = state.upgrades[upgrade.id] || 0;
             const base = Math.floor(upgrade.baseCost * Math.pow(upgrade.costMult, level));
-            const discount = getDiscount();
-            return Math.floor(base * (1 - discount));
+            return Math.floor(base * (1 - getDiscount()));
         }
 
         function getCharCost(upgrade) {
@@ -1645,35 +1553,22 @@
         }
 
         function recalcIncome() {
-            let clickBonus = 0;
-            let autoBonus = 0;
-            
-            CLICK_UPGRADES.forEach(u => {
-                clickBonus += u.effect * (state.upgrades[u.id] || 0);
-            });
-            MINING_UPGRADES.forEach(u => {
-                autoBonus += u.effect * (state.upgrades[u.id] || 0);
-            });
-            
-            // Применяем множители персонажа
+            let clickBonus = 0, autoBonus = 0;
+            CLICK_UPGRADES.forEach(u => clickBonus += u.effect * (state.upgrades[u.id] || 0));
+            MINING_UPGRADES.forEach(u => autoBonus += u.effect * (state.upgrades[u.id] || 0));
             const clickMult = 1 + (state.charUpgrades.str || 0) * 0.1;
             const autoMult = 1 + (state.charUpgrades.spd || 0) * 0.05;
-            
             state.clickIncome = Math.floor((1 + clickBonus) * clickMult);
             state.autoIncome = Math.floor(autoBonus * autoMult);
         }
 
         function getCritChance() {
-            return Math.min(0.5, (state.charUpgrades.luck || 0) * 0.02); // максимум 50%
+            return Math.min(0.5, (state.charUpgrades.luck || 0) * 0.02);
         }
 
         function getCharPower() {
-            // Суммарная "сила" персонажа
             let power = 0;
-            CHAR_UPGRADES.forEach(u => {
-                power += (state.charUpgrades[u.id] || 0) * 10;
-            });
-            // + сила от баланса (log)
+            CHAR_UPGRADES.forEach(u => power += (state.charUpgrades[u.id] || 0) * 10);
             power += Math.floor(Math.log10(Math.max(1, state.stats.totalEarned)) * 5);
             return power;
         }
@@ -1694,21 +1589,13 @@
 
         function renderCards() {
             const list = state.activeTab === 'mining' ? MINING_UPGRADES : CLICK_UPGRADES;
-            
             cardsGrid.innerHTML = list.map(u => {
                 const level = state.upgrades[u.id] || 0;
                 const cost = getCost(u);
                 const canAfford = state.balance >= cost;
                 const totalEffect = u.effect * level;
                 const progress = Math.min(100, (state.balance / cost) * 100);
-                
-                let effectLabel;
-                if (state.activeTab === 'mining') {
-                    effectLabel = `+${formatNumber(totalEffect)}/сек`;
-                } else {
-                    effectLabel = `+${formatNumber(totalEffect)}/удар`;
-                }
-                
+                const effectLabel = state.activeTab === 'mining' ? `+${formatNumber(totalEffect)}/сек` : `+${formatNumber(totalEffect)}/удар`;
                 return `
                     <div class="card ${u.color} ${canAfford ? '' : 'locked'}" data-id="${u.id}">
                         ${level > 0 ? `<div class="card-level">Ур.${level}</div>` : ''}
@@ -1716,39 +1603,29 @@
                         <div class="card-title">${u.name}</div>
                         <div class="card-effect">${effectLabel}</div>
                         <div class="card-cost ${canAfford ? 'affordable' : ''}">${formatNumber(cost)}</div>
-                        <div class="card-progress">
-                            <div class="card-progress-fill ${canAfford ? 'full' : ''}" style="width:${progress}%"></div>
-                        </div>
+                        <div class="card-progress"><div class="card-progress-fill ${canAfford ? 'full' : ''}" style="width:${progress}%"></div></div>
                     </div>
                 `;
             }).join('');
-            
             cardsGrid.querySelectorAll('.card').forEach(card => {
-                card.addEventListener('click', () => {
-                    tryBuyUpgrade(card.dataset.id);
-                });
+                card.addEventListener('click', () => tryBuyUpgrade(card.dataset.id));
             });
         }
 
         function tryBuyUpgrade(id) {
-            const all = [...MINING_UPGRADES, ...CLICK_UPGRADES];
-            const u = all.find(x => x.id === id);
+            const u = [...MINING_UPGRADES, ...CLICK_UPGRADES].find(x => x.id === id);
             if (!u) return;
-            
             const cost = getCost(u);
             if (state.balance < cost) {
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
                 return;
             }
-            
             state.balance -= cost;
             state.upgrades[id] = (state.upgrades[id] || 0) + 1;
-            
             recalcIncome();
             updateUI();
             renderCards();
             saveState();
-            
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
 
@@ -1762,29 +1639,21 @@
             });
         });
 
-        // === КЛИК ПО КРИСТАЛЛУ ===
         crystalWrapper.addEventListener('click', (e) => {
             e.stopPropagation();
             const x = e.clientX;
             const y = e.clientY;
-
-            // Проверяем крит
             const isCrit = Math.random() < getCritChance();
-            const multiplier = isCrit ? 10 : 1;
-            const gained = state.clickIncome * multiplier;
-
+            const gained = state.clickIncome * (isCrit ? 10 : 1);
             state.balance += gained;
             state.stats.clicks += 1;
             state.stats.totalEarned += gained;
             updateUI();
             renderCards();
-
             createFloatingText(gained, x, y, isCrit);
             clickCrystal();
             pulseBalance();
-            
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred(isCrit ? 'medium' : 'light');
-            
             throttledSave();
         });
 
@@ -1815,7 +1684,6 @@
             setTimeout(() => el.remove(), 900);
         }
 
-        // === АВТО-ДОХОД ===
         setInterval(() => {
             if (state.autoIncome > 0) {
                 state.balance += state.autoIncome;
@@ -1829,37 +1697,21 @@
         let saveTimeout = null;
         function throttledSave() {
             if (saveTimeout) return;
-            saveTimeout = setTimeout(() => {
-                saveState();
-                saveTimeout = null;
-            }, 2000);
+            saveTimeout = setTimeout(() => { saveState(); saveTimeout = null; }, 2000);
         }
 
-        // ==================================================
-        // ОФФЛАЙН-ДОХОД
-        // ==================================================
         function calculateOffline() {
             if (!state.lastSeen) return null;
-            
-            const now = Date.now();
-            const diffMs = now - state.lastSeen;
-            const diffSec = Math.floor(diffMs / 1000);
-            
-            if (diffSec < 60) return null;
-            if (state.autoIncome <= 0) return null;
-            
-            const maxSec = OFFLINE_MAX_HOURS * 3600;
-            const effectiveSec = Math.min(diffSec, maxSec);
+            const diffSec = Math.floor((Date.now() - state.lastSeen) / 1000);
+            if (diffSec < 60 || state.autoIncome <= 0) return null;
+            const effectiveSec = Math.min(diffSec, OFFLINE_MAX_HOURS * 3600);
             const earned = Math.floor(state.autoIncome * effectiveSec * OFFLINE_RATE);
-            
             if (earned <= 0) return null;
-            
             return { earned, seconds: diffSec, effectiveSec };
         }
 
         function showOfflineModal(data) {
             document.getElementById('offline-amount').textContent = '+' + formatNumber(data.earned) + ' 🧊';
-            
             let timeText;
             if (data.seconds >= OFFLINE_MAX_HOURS * 3600) {
                 timeText = `Отсутствовали ${formatTime(data.seconds)}. Начислено за первые ${OFFLINE_MAX_HOURS} ч (${Math.round(OFFLINE_RATE*100)}%).`;
@@ -1867,7 +1719,6 @@
                 timeText = `Отсутствовали ${formatTime(data.seconds)}. Начислено ${Math.round(OFFLINE_RATE*100)}% от дохода.`;
             }
             document.getElementById('offline-time').textContent = timeText;
-            
             document.getElementById('offline-modal').classList.add('show');
             state.balance += data.earned;
             state.stats.totalEarned += data.earned;
@@ -1876,79 +1727,44 @@
             saveState();
         }
 
-        window.closeOfflineModal = function() {
-            document.getElementById('offline-modal').classList.remove('show');
-        };
-
-        // ==================================================
-        // ЛИДЕРБОРД
-        // ==================================================
-        window.closeLeaderboard = function() {
-            document.getElementById('lb-modal').classList.remove('show');
-        };
+        window.closeOfflineModal = () => document.getElementById('offline-modal').classList.remove('show');
+        window.closeLeaderboard = () => document.getElementById('lb-modal').classList.remove('show');
+        window.closeBossWin = () => document.getElementById('boss-win-modal').classList.remove('show');
 
         async function loadLeaderboard() {
             const lbList = document.getElementById('lb-list');
             lbList.innerHTML = '<div class="modal-text">Загрузка...</div>';
-            
             const myId = TG_USER?.id || 'local_' + (localStorage.getItem('lb_uid') || (() => {
                 const uid = 'anon_' + Math.random().toString(36).slice(2, 10);
                 localStorage.setItem('lb_uid', uid);
                 return uid;
             })());
-            
-            const myName = state.customNickname || (TG_USER 
-                ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' 
-                : 'Вы');
-            
-            // Отправка score
+            const myName = state.customNickname || (TG_USER ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' : 'Вы');
             try {
                 const params = new URLSearchParams({
-                    action: 'post',
-                    user_id: myId,
-                    name: myName,
-                    username: TG_USER?.username || '',
-                    photo: TG_USER?.photo_url || '',
+                    action: 'post', user_id: myId, name: myName,
+                    username: TG_USER?.username || '', photo: TG_USER?.photo_url || '',
                     score: Math.floor(state.balance)
                 });
-                await fetch(`${LEADERBOARD_API}?${params.toString()}`, {
-                    method: 'GET',
-                    mode: 'no-cors'
-                });
+                await fetch(`${LEADERBOARD_API}?${params.toString()}`, { method: 'GET', mode: 'no-cors' });
             } catch (e) { console.warn('Score upload failed', e); }
-            
-            // Загрузка через JSONP
             const callbackName = 'lb_cb_' + Date.now();
-            
             window[callbackName] = function(data) {
                 delete window[callbackName];
                 if (script.parentNode) script.parentNode.removeChild(script);
-                
                 if (!Array.isArray(data) || data.length === 0) {
                     lbList.innerHTML = '<div class="modal-text">Пока никто не играл</div>';
                     return;
                 }
-                
-                // Находим свою позицию
                 const myIndex = data.findIndex(row => String(row.user_id) === String(myId));
-                if (myIndex >= 0) {
-                    state.myRank = myIndex + 1;
-                }
-                
+                if (myIndex >= 0) state.myRank = myIndex + 1;
                 lbList.innerHTML = data.map((row, i) => {
                     const rank = i + 1;
                     const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
                     const isMe = String(row.user_id) === String(myId) ? 'me' : '';
-                    return `
-                        <div class="lb-row ${isMe}">
-                            <div class="lb-rank ${rankClass}">${rank}</div>
-                            <div class="lb-name">${row.name || 'Игрок'}</div>
-                            <div class="lb-score">${formatNumber(row.score)}</div>
-                        </div>
-                    `;
+                    return `<div class="lb-row ${isMe}"><div class="lb-rank ${rankClass}">${rank}</div><div class="lb-name">${row.name || 'Игрок'}</div><div class="lb-score">${formatNumber(row.score)}</div></div>`;
                 }).join('');
             };
-            
             const script = document.createElement('script');
             script.src = `${LEADERBOARD_API}?limit=100&callback=${callbackName}`;
             script.onerror = () => {
@@ -1957,7 +1773,6 @@
                 if (script.parentNode) script.parentNode.removeChild(script);
             };
             document.body.appendChild(script);
-            
             setTimeout(() => {
                 if (window[callbackName]) {
                     lbList.innerHTML = '<div class="modal-text">Превышено время ожидания</div>';
@@ -1967,9 +1782,6 @@
             }, 10000);
         }
 
-        // ==================================================
-        // НАВИГАЦИЯ
-        // ==================================================
         const navItems = document.querySelectorAll('.nav-item');
         const screens = {
             bosses: document.getElementById('screen-bosses'),
@@ -1978,24 +1790,16 @@
         };
 
         function openScreen(name) {
-            // Закрываем все экраны
             Object.values(screens).forEach(s => s.classList.remove('active'));
-            
-            // Открываем нужный
             if (screens[name]) {
                 screens[name].classList.add('active');
                 crystalWrapper.classList.add('hidden');
-                
-                // Обновляем контент экрана
                 if (name === 'bosses') renderBossesScreen();
                 if (name === 'character') renderCharacterScreen();
                 if (name === 'profile') renderProfileScreen();
             } else {
-                // Возврат на главный
                 crystalWrapper.classList.remove('hidden');
             }
-            
-            // Обновляем активный таб
             navItems.forEach(item => {
                 item.classList.toggle('active', item.dataset.nav === name);
             });
@@ -2009,36 +1813,19 @@
                     loadLeaderboard();
                     return;
                 }
-                if (nav === 'ice') {
-                    openScreen(null);
-                    return;
-                }
+                if (nav === 'ice') { openScreen(null); return; }
                 openScreen(nav);
             });
         });
 
         document.querySelectorAll('[data-close]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                openScreen(null);
-            });
+            btn.addEventListener('click', () => openScreen(null));
         });
 
-        // ==================================================
-        // БОССЫ
-        // ==================================================
         function spawnBoss() {
             const boss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
             const hp = Math.max(100, Math.floor(state.autoIncome * boss.hpMult + state.clickIncome * 30));
-            
-            state.boss = {
-                active: true,
-                name: boss.name,
-                art: boss.art,
-                hp: hp,
-                maxHp: hp,
-                startTime: Date.now(),
-                nextSpawn: 0,
-            };
+            state.boss = { active: true, name: boss.name, art: boss.art, hp, maxHp: hp, startTime: Date.now(), nextSpawn: 0 };
             saveState();
             renderBossesScreen();
         }
@@ -2048,28 +1835,21 @@
             const bossCard = document.getElementById('boss-card');
             const bossEmpty = document.getElementById('boss-empty');
             const bossStatus = document.getElementById('boss-status-text');
-            
-            // Обновляем статистику
             document.getElementById('boss-stat-killed').textContent = state.stats.bossesKilled || 0;
             document.getElementById('boss-stat-earned').textContent = formatNumber(state.stats.bossEarned || 0);
-            
             if (state.boss.active) {
                 const timeLeft = BOSS_FIGHT_DURATION - (now - state.boss.startTime);
-                
                 if (timeLeft <= 0 || state.boss.hp <= 0) {
-                    // Бой окончен
                     state.boss.active = false;
                     state.boss.nextSpawn = now + BOSS_INTERVAL;
                     saveState();
                     renderBossesScreen();
                     return;
                 }
-                
                 bossCard.classList.remove('hidden');
                 bossEmpty.style.display = 'none';
                 bossStatus.textContent = '⚔️ Идёт бой!';
                 bossStatus.className = 'boss-status boss-ready-text';
-                
                 document.getElementById('boss-art').textContent = state.boss.art;
                 document.getElementById('boss-name').textContent = state.boss.name;
                 document.getElementById('boss-hp-text').textContent = `HP: ${formatNumber(state.boss.hp)} / ${formatNumber(state.boss.maxHp)}`;
@@ -2078,12 +1858,15 @@
             } else {
                 bossCard.classList.add('hidden');
                 bossEmpty.style.display = 'block';
-                
                 const timeToSpawn = state.boss.nextSpawn - now;
-                if (timeToSpawn <= 0) {
+                if (timeToSpawn <= 0 && state.autoIncome > 0) {
                     bossStatus.textContent = '🐉 Босс готов к бою!';
                     bossStatus.className = 'boss-status boss-ready-text';
                     document.getElementById('boss-empty-text').textContent = 'Нажми кнопку ниже, чтобы начать бой';
+                } else if (state.autoIncome <= 0) {
+                    bossStatus.textContent = 'Купи улучшение "Кристалл" для появления боссов';
+                    bossStatus.className = 'boss-status';
+                    document.getElementById('boss-empty-text').textContent = 'Боссы появляются только при наличии пассивного дохода';
                 } else {
                     bossStatus.textContent = `Следующий босс через ${formatTime(timeToSpawn / 1000)}`;
                     bossStatus.className = 'boss-status';
@@ -2094,28 +1877,16 @@
 
         document.getElementById('boss-attack-btn').addEventListener('click', () => {
             if (!state.boss.active) return;
-            
             const now = Date.now();
             const timeLeft = BOSS_FIGHT_DURATION - (now - state.boss.startTime);
-            
             if (timeLeft <= 0) return;
-            
-            // Проверяем крит
             const isCrit = Math.random() < getCritChance();
-            const multiplier = isCrit ? 10 : 1;
-            const damage = state.clickIncome * multiplier;
-            
+            const damage = state.clickIncome * (isCrit ? 10 : 1);
             state.boss.hp -= damage;
-            state.stats.totalEarned += 0;
-            
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            
-            // Всплывающий текст
             const rect = document.getElementById('boss-attack-btn').getBoundingClientRect();
             createFloatingText(damage, rect.left + rect.width / 2, rect.top, isCrit);
-            
             if (state.boss.hp <= 0) {
-                // Победа!
                 const reward = Math.floor(state.autoIncome * 60 + state.clickIncome * 100);
                 state.balance += reward;
                 state.stats.totalEarned += reward;
@@ -2123,10 +1894,8 @@
                 state.stats.bossEarned = (state.stats.bossEarned || 0) + reward;
                 state.boss.active = false;
                 state.boss.nextSpawn = now + BOSS_INTERVAL;
-                
                 document.getElementById('boss-win-reward').textContent = '+' + formatNumber(reward) + ' 🧊';
                 document.getElementById('boss-win-modal').classList.add('show');
-                
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 saveState();
                 updateUI();
@@ -2134,54 +1903,25 @@
             } else {
                 saveState();
             }
-            
             renderBossesScreen();
         });
 
-        window.closeBossWin = function() {
-            document.getElementById('boss-win-modal').classList.remove('show');
-        };
-
-        // Таймер обновления боссов
         setInterval(() => {
-            if (screens.bosses?.classList.contains('active')) {
-                renderBossesScreen();
-            }
-            
-            // Автоспавн босса
-            if (!state.boss.active && Date.now() >= state.boss.nextSpawn && state.autoIncome > 0) {
-                spawnBoss();
-            }
+            if (screens.bosses?.classList.contains('active')) renderBossesScreen();
+            if (!state.boss.active && Date.now() >= state.boss.nextSpawn && state.autoIncome > 0) spawnBoss();
         }, 1000);
 
-        // ==================================================
-        // ПЕРСОНАЖ
-        // ==================================================
         function renderCharacterScreen() {
-            // Аватар
             const avatarEl = document.getElementById('char-avatar');
-            if (TG_USER?.photo_url) {
-                avatarEl.innerHTML = `<img src="${TG_USER.photo_url}" alt="">`;
-            } else {
-                avatarEl.textContent = '🧊';
-            }
-            
-            // Имя
-            const name = state.customNickname || (TG_USER 
-                ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' 
-                : 'Игрок');
+            if (TG_USER?.photo_url) avatarEl.innerHTML = `<img src="${TG_USER.photo_url}" alt="">`;
+            else avatarEl.textContent = '🧊';
+            const name = state.customNickname || (TG_USER ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' : 'Игрок');
             document.getElementById('char-name').textContent = name;
-            
-            // Сила
             document.getElementById('char-power-value').textContent = getCharPower();
-            
-            // Статистика
             document.getElementById('char-stat-clicks').textContent = formatNumber(state.stats.clicks || 0);
             document.getElementById('char-stat-total').textContent = formatNumber(state.stats.totalEarned || 0);
             document.getElementById('char-stat-perclick').textContent = formatNumber(state.clickIncome);
             document.getElementById('char-stat-persec').textContent = formatNumber(state.autoIncome);
-            
-            // Список апгрейдов
             const list = document.getElementById('char-upgrades-list');
             list.innerHTML = CHAR_UPGRADES.map(u => {
                 const level = state.charUpgrades[u.id] || 0;
@@ -2189,131 +1929,77 @@
                 const canAfford = state.balance >= cost;
                 const maxed = u.maxLevel && level >= u.maxLevel;
                 const totalBonus = (u.effect * level * 100).toFixed(0);
-                
                 return `
                     <div class="char-upgrade ${canAfford && !maxed ? '' : 'locked'}" data-char-id="${u.id}">
                         <div class="char-upgrade-icon">${u.icon}</div>
                         <div class="char-upgrade-info">
                             <div class="char-upgrade-name">${u.name}</div>
                             <div class="char-upgrade-effect">${u.desc}${level > 0 ? ` (уже +${totalBonus}%)` : ''}</div>
-                            <div class="char-upgrade-cost ${canAfford ? 'affordable' : ''}">
-                                ${maxed ? '✅ МАКСИМУМ' : `${formatNumber(cost)} 🧊`}
-                            </div>
+                            <div class="char-upgrade-cost ${canAfford ? 'affordable' : ''}">${maxed ? '✅ МАКСИМУМ' : `${formatNumber(cost)} 🧊`}</div>
                         </div>
                         <div class="char-upgrade-level">${level}${u.maxLevel ? '/' + u.maxLevel : ''}</div>
                     </div>
                 `;
             }).join('');
-            
-            // Обработчики
             list.querySelectorAll('.char-upgrade').forEach(el => {
-                el.addEventListener('click', () => {
-                    tryBuyCharUpgrade(el.dataset.charId);
-                });
+                el.addEventListener('click', () => tryBuyCharUpgrade(el.dataset.charId));
             });
         }
 
         function tryBuyCharUpgrade(id) {
             const u = CHAR_UPGRADES.find(x => x.id === id);
             if (!u) return;
-            
             const level = state.charUpgrades[u.id] || 0;
-            if (u.maxLevel && level >= u.maxLevel) {
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
-                return;
-            }
-            
+            if (u.maxLevel && level >= u.maxLevel) return;
             const cost = getCharCost(u);
             if (state.balance < cost) {
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
                 return;
             }
-            
             state.balance -= cost;
             state.charUpgrades[u.id] = level + 1;
-            
             recalcIncome();
             updateUI();
             renderCards();
             renderCharacterScreen();
             saveState();
-            
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
 
-        // ==================================================
-        // ПРОФИЛЬ
-        // ==================================================
         function renderProfileScreen() {
-            // Аватар
             const avatarEl = document.getElementById('profile-avatar');
-            if (TG_USER?.photo_url) {
-                avatarEl.innerHTML = `<img src="${TG_USER.photo_url}" alt="">`;
-            } else {
-                avatarEl.textContent = '🧊';
-            }
-            
-            // Имя
-            const name = state.customNickname || (TG_USER 
-                ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' 
-                : 'Игрок');
+            if (TG_USER?.photo_url) avatarEl.innerHTML = `<img src="${TG_USER.photo_url}" alt="">`;
+            else avatarEl.textContent = '🧊';
+            const name = state.customNickname || (TG_USER ? `${TG_USER.first_name || ''} ${TG_USER.last_name || ''}`.trim() || 'Игрок' : 'Игрок');
             document.getElementById('profile-name').textContent = name;
-            
-            // ID
             document.getElementById('profile-id').textContent = 'ID: ' + (TG_USER?.id || 'локальный');
-            
-            // Никнейм в поле
             document.getElementById('profile-nickname-input').value = state.customNickname || '';
-            
-            // Ранг
             const rankEl = document.getElementById('profile-rank');
-            if (state.myRank) {
-                rankEl.textContent = `🏆 Место в топе: #${state.myRank}`;
-            } else {
-                rankEl.textContent = '🏆 Обнови рейтинг';
-            }
-            
-            // Статистика
+            rankEl.textContent = state.myRank ? `🏆 Место в топе: #${state.myRank}` : '🏆 Обнови рейтинг';
             document.getElementById('profile-stat-balance').textContent = formatNumber(state.balance);
             document.getElementById('profile-stat-total').textContent = formatNumber(state.stats.totalEarned || 0);
             document.getElementById('profile-stat-clicks').textContent = formatNumber(state.stats.clicks || 0);
-            
             const days = Math.max(1, Math.floor((Date.now() - (state.stats.startDate || Date.now())) / (24 * 60 * 60 * 1000)) + 1);
             document.getElementById('profile-stat-days').textContent = days;
-            
-            // Дата старта
             const startDate = new Date(state.stats.startDate || Date.now());
             document.getElementById('profile-start-date').textContent = startDate.toLocaleDateString('ru-RU');
         }
 
-        // === СОХРАНЕНИЕ НИКА ===
         document.getElementById('profile-nickname-save').addEventListener('click', () => {
             const input = document.getElementById('profile-nickname-input');
             const newNick = input.value.trim();
-            
-            if (newNick.length === 0) {
-                tg.showAlert('Введите ник');
-                return;
-            }
-            
-            if (newNick.length > 20) {
-                tg.showAlert('Ник не должен превышать 20 символов');
-                return;
-            }
-            
+            if (newNick.length === 0) { tg.showAlert('Введите ник'); return; }
+            if (newNick.length > 20) { tg.showAlert('Ник не должен превышать 20 символов'); return; }
             state.customNickname = newNick;
             saveState();
             renderProfileScreen();
-            
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert('Ник сохранён!');
         });
 
-        // === ПОДЕЛИТЬСЯ ===
         document.getElementById('profile-share-btn').addEventListener('click', () => {
             const text = `🧊 Я добыл ${formatNumber(state.balance)} льда! Попробуй меня обогнать!`;
-            const url = 'https://t.me/'; // ← сюда можно вставить ссылку на бота
-            
+            const url = 'https://t.me/';
             if (tg.openTelegramLink && TG_USER) {
                 const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
                 tg.openTelegramLink(shareUrl);
@@ -2325,14 +2011,12 @@
             }
         });
 
-        // === ОБНОВИТЬ РЕЙТИНГ ===
         document.getElementById('profile-update-btn').addEventListener('click', async () => {
             await loadLeaderboard();
             renderProfileScreen();
             tg.showAlert('Рейтинг обновлён!');
         });
 
-        // === СБРОС ===
         document.getElementById('profile-reset-btn').addEventListener('click', () => {
             tg.showConfirm('Сбросить весь прогресс? Это действие нельзя отменить.', () => {
                 localStorage.removeItem(SAVE_KEY);
@@ -2340,26 +2024,13 @@
             });
         });
 
-        // ==================================================
-        // СТАРТ
-        // ==================================================
         loadState();
         recalcIncome();
-        
         const offlineData = calculateOffline();
-        
-        document.querySelectorAll('.main-tab').forEach(t => {
-            t.classList.toggle('active', t.dataset.tab === state.activeTab);
-        });
-        
+        document.querySelectorAll('.main-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === state.activeTab));
         updateUI();
         renderCards();
-        
-        if (offlineData) {
-            setTimeout(() => showOfflineModal(offlineData), 400);
-        }
-        
-        // Проверка на пропущенного босса
+        if (offlineData) setTimeout(() => showOfflineModal(offlineData), 400);
         if (state.boss.active) {
             const timeLeft = BOSS_FIGHT_DURATION - (Date.now() - state.boss.startTime);
             if (timeLeft <= 0) {
@@ -2368,11 +2039,8 @@
                 saveState();
             }
         }
-        
         window.addEventListener('beforeunload', saveState);
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) saveState();
-        });
+        document.addEventListener('visibilitychange', () => { if (document.hidden) saveState(); });
     </script>
 </body>
-</html>
+    </html>
